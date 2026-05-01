@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Ink.Runtime;
 using TMPro;
 using UnityEngine;
@@ -13,336 +12,153 @@ namespace VN
     {
         [Header("Dialogue")]
         [SerializeField] private TMP_Text speakerText;
-        [SerializeField] private TMP_Text lineText;
+        [SerializeField] private VNTextTyper typer;
 
         [Header("Choices")]
-        [SerializeField] private GameObject choicesRoot;
-        [SerializeField] private Transform choicesContainer;
-        [SerializeField] private Button choiceButtonPrefab;
+        [SerializeField] private VNChoicePanel choicePanel;
 
         [Header("Backlog")]
-        [SerializeField] private GameObject backlogRoot;
-        [SerializeField] private TMP_Text backlogText;
+        [SerializeField] private VNBacklogManager backlogManager;
 
-        [Tooltip("Backlog ScrollView의 ScrollRect를 연결하세요. (ScrollRect.content는 Content로 지정되어 있어야 합니다.)")]
-        [SerializeField] private ScrollRect backlogScrollRect;
-
-        [Tooltip("백로그 최대 기록 수. 초과하면 오래된 항목부터 삭제됩니다.")]
-        [SerializeField] private int backlogMaxEntries = 300;
-
-        [Tooltip("유저가 거의 하단을 보고 있을 때만 자동으로 하단으로 스크롤합니다. 0에 가까울수록 더 엄격합니다.")]
-        [Range(0f, 0.2f)]
-        [SerializeField] private float backlogAutoScrollThreshold = 0.02f;
+        [Header("Save/Load")]
+        [SerializeField] private VNOptionPanel optionPanel;
+        [SerializeField] private VNSaveLoadPanel saveLoadPanel;
 
         [Header("Controls")]
         [SerializeField] private Button advanceButton;
-        [SerializeField] private Toggle autoToggle;
-        [SerializeField] private Toggle skipToggle;
         [SerializeField] private Button backlogButton;
 
-        [Header("Typing")]
-        [SerializeField] private float secondsPerChar = 0.03f;
-
-        [Header("Auto")]
+        [Header("Auto/Skip Settings")]
         [SerializeField] private float autoBaseWait = 0.8f;
         [SerializeField] private float autoPerCharWait = 0.02f;
+        [SerializeField] private float autoWaitMultiplier = 1.0f; // 오토 대기 시간 가중치 (1.0 = 기본)
+        [SerializeField] private Toggle autoToggle;
+        [SerializeField] private Toggle skipToggle;
 
         private bool advanceRequested;
-        private bool skipTypingRequested;
-        private bool isTyping;
-
         private bool advanceButtonPrevActive;
-
-        private const float ChoiceMinHeight = 70f;
-        private const float ChoiceVerticalPadding = 24f;
-
-        private readonly List<(string speaker, string line)> backlog = new();
 
         public bool AutoMode => autoToggle != null && autoToggle.isOn;
         public bool SkipMode => skipToggle != null && skipToggle.isOn;
 
+        public void SetAutoMode(bool isOn) { if (autoToggle != null) autoToggle.isOn = isOn; }
+        public void SetSkipMode(bool isOn) { if (skipToggle != null) skipToggle.isOn = isOn; }
+
+        public string CurrentSpeaker => speakerText != null ? speakerText.text : string.Empty;
+        public string CurrentText => typer != null ? typer.CurrentText : string.Empty;
+
         private void Awake()
         {
-            if (advanceButton != null)
-                advanceButton.onClick.AddListener(OnAdvancePressed);
+            if (advanceButton != null) advanceButton.onClick.AddListener(OnAdvancePressed);
+            if (backlogButton != null) backlogButton.onClick.AddListener(ToggleBacklog);
 
-            if (backlogButton != null)
-                backlogButton.onClick.AddListener(ToggleBacklog);
+            if (choicePanel != null) choicePanel.SetVisible(false);
+            if (saveLoadPanel != null) saveLoadPanel.Close();
+            if (optionPanel != null) optionPanel.Close();
+        }
 
-            SetChoicesVisible(false);
-            SetBacklogVisible(false);
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (saveLoadPanel != null && saveLoadPanel.gameObject.activeSelf)
+                {
+                    saveLoadPanel.Close();
+                }
+                else if (optionPanel != null)
+                {
+                    if (optionPanel.IsOpen) optionPanel.Close();
+                    else optionPanel.Open();
+                }
+            }
         }
 
         private void OnAdvancePressed()
         {
-            if (isTyping)
-            {
-                skipTypingRequested = true;
-                return;
-            }
-
-            advanceRequested = true;
+            if (typer != null && typer.IsTyping) typer.Skip();
+            else advanceRequested = true;
         }
 
         public void SetSpeaker(string speaker)
         {
-            if (speakerText != null)
-                speakerText.text = speaker ?? string.Empty;
+            if (speakerText != null) speakerText.text = speaker ?? string.Empty;
+        }
+
+        public void RestoreState(string speaker, string text)
+        {
+            SetSpeaker(speaker);
+            if (typer != null) typer.ShowImmediate(text);
         }
 
         public IEnumerator PresentLine(string text)
         {
-            text ??= string.Empty;
-
-            if (lineText == null)
-                yield break;
-
-            if (SkipMode)
-            {
-                lineText.text = text;
-                lineText.maxVisibleCharacters = int.MaxValue;
-                isTyping = false;
-                skipTypingRequested = false;
-                yield break;
-            }
-
-            isTyping = true;
-            skipTypingRequested = false;
-
-            lineText.text = text;
-            lineText.maxVisibleCharacters = 0;
-
-            lineText.ForceMeshUpdate();
-
-            float delay = Mathf.Clamp(secondsPerChar, 0.001f, 1f);
-
-            int total = lineText.textInfo.characterCount;
-            int visible = 0;
-            float timer = 0f;
-
-            while (visible < total)
-            {
-                if (SkipMode || skipTypingRequested)
-                    break;
-
-                timer += Time.unscaledDeltaTime;
-
-                while (timer >= delay && visible < total)
-                {
-                    timer -= delay;
-                    visible++;
-                    lineText.maxVisibleCharacters = visible;
-                }
-
-                yield return null;
-            }
-
-            lineText.maxVisibleCharacters = int.MaxValue;
-            isTyping = false;
-            skipTypingRequested = false;
+            if (typer == null) yield break;
+            yield return typer.TypeText(text, SkipMode);
+            
+            // 스킵 모드일 때 대사가 출력되자마자 사라지는 것을 방지하기 위한 최소한의 찰나 대기
+            if (SkipMode) yield return new WaitForSecondsRealtime(0.03f);
         }
+
+        public void SetAutoWaitMultiplier(float multiplier) => autoWaitMultiplier = Mathf.Max(0.1f, multiplier);
 
         public IEnumerator WaitForAdvanceOrAuto(int lineCharCount)
         {
             advanceRequested = false;
+            
+            // 지능형 대기 시간 계산
+            float autoWait = Mathf.Max(0.05f, (autoBaseWait + lineCharCount * autoPerCharWait) * autoWaitMultiplier);
+            float timer = 0f;
 
-            float autoWait = Mathf.Max(0.05f, autoBaseWait + lineCharCount * autoPerCharWait);
-            float autoTimer = 0f;
-
-            while (true)
+            // 루프 조건에 !optionPanel.IsOpen을 추가하여 메뉴가 열리면 대기하게 함
+            while (!advanceRequested && (!AutoMode || timer < autoWait) && !SkipMode)
             {
-                if (SkipMode)
+                // 옵션 패널이 열려있지 않을 때만 타이머를 올림
+                if (optionPanel == null || !optionPanel.IsOpen)
                 {
-                    advanceRequested = false;
-                    yield break;
+                    timer += Time.unscaledDeltaTime;
                 }
-
-                if (advanceRequested)
-                {
-                    advanceRequested = false;
-                    yield break;
-                }
-
-                if (AutoMode)
-                {
-                    autoTimer += Time.unscaledDeltaTime;
-                    if (autoTimer >= autoWait)
-                        yield break;
-                }
-                else
-                {
-                    autoTimer = 0f;
-                }
-
                 yield return null;
             }
-        }
 
-        public void AddBacklog(string speaker, string line)
-        {
-            if (string.IsNullOrWhiteSpace(line))
-                return;
-
-            backlog.Add((speaker ?? string.Empty, line));
-
-            if (backlogMaxEntries > 0 && backlog.Count > backlogMaxEntries)
+            // 스킵 모드일 때도 메뉴가 열려있으면 대기
+            while (SkipMode && optionPanel != null && optionPanel.IsOpen)
             {
-                int removeCount = backlog.Count - backlogMaxEntries;
-                backlog.RemoveRange(0, removeCount);
+                yield return null;
             }
 
-            RefreshBacklogText();
-
-            // 백로그가 열려 있고, 유저가 거의 하단에 있을 때만 자동 스크롤
-            AutoScrollBacklogIfNeeded(forceToBottom: false);
+            // 스킵 모드일 때의 아주 짧은 시각적 대기
+            if (SkipMode)
+            {
+                yield return new WaitForSecondsRealtime(0.05f);
+            }
         }
 
-        private void RefreshBacklogText()
+        public void AddBacklog(string speaker, string line) => backlogManager?.AddEntry(speaker, line);
+        public void ToggleBacklog() => backlogManager?.ToggleBacklog();
+        
+        // 백로그 데이터 교환
+        public List<BacklogData> GetBacklogData() => backlogManager?.GetBacklogData() ?? new List<BacklogData>();
+        public void ClearAndRestoreBacklog(List<BacklogData> data) => backlogManager?.ClearAndRestore(data);
+
+        public void OpenSaveLoad(VNSaveLoadPanel.PanelMode mode)
         {
-            if (backlogText == null)
-                return;
-
-            var sb = new StringBuilder(4096);
-
-            for (int i = 0; i < backlog.Count; i++)
-            {
-                var e = backlog[i];
-
-                if (!string.IsNullOrEmpty(e.speaker))
-                {
-                    sb.Append(e.speaker).Append(": ");
-                }
-
-                sb.Append(e.line).Append('\n');
-            }
-
-            backlogText.text = sb.ToString();
-        }
-
-        private void AutoScrollBacklogIfNeeded(bool forceToBottom)
-        {
-            if (backlogScrollRect == null)
-                return;
-
-            if (backlogRoot == null || !backlogRoot.activeInHierarchy)
-                return;
-
-            bool shouldScroll = forceToBottom;
-
-            if (!shouldScroll)
-            {
-                // verticalNormalizedPosition: 1 = top, 0 = bottom
-                float pos = backlogScrollRect.verticalNormalizedPosition;
-                shouldScroll = pos <= backlogAutoScrollThreshold;
-            }
-
-            if (!shouldScroll)
-                return;
-
-            // 레이아웃 갱신 후 이동
-            Canvas.ForceUpdateCanvases();
-
-            // Content가 제대로 지정되어 있어야 함(ScrollRect.content)
-            backlogScrollRect.verticalNormalizedPosition = 0f;
+            if (saveLoadPanel != null) saveLoadPanel.Open(mode);
         }
 
         public void ShowChoices(IReadOnlyList<Choice> choices, Action<int> onSelect)
         {
+            if (choicePanel == null) return;
             if (advanceButton != null)
             {
                 advanceButtonPrevActive = advanceButton.gameObject.activeSelf;
                 advanceButton.gameObject.SetActive(false);
             }
 
-            ClearChoices();
-
-            if (choices == null || choices.Count == 0)
+            choicePanel.Show(choices, index =>
             {
-                SetChoicesVisible(false);
-
-                if (advanceButton != null)
-                    advanceButton.gameObject.SetActive(advanceButtonPrevActive);
-
-                return;
-            }
-
-            SetChoicesVisible(true);
-
-            for (int i = 0; i < choices.Count; i++)
-            {
-                int index = i;
-
-                var btn = Instantiate(choiceButtonPrefab, choicesContainer);
-
-                var tmp = btn.GetComponentInChildren<TMP_Text>(true);
-                if (tmp != null)
-                {
-                    tmp.text = choices[i].text;
-
-                    tmp.ForceMeshUpdate();
-
-                    var le = btn.GetComponent<LayoutElement>();
-                    if (le == null) le = btn.gameObject.AddComponent<LayoutElement>();
-
-                    float h = Mathf.Max(ChoiceMinHeight, tmp.preferredHeight + ChoiceVerticalPadding);
-                    le.preferredHeight = h;
-                }
-
-                btn.onClick.AddListener(() =>
-                {
-                    // 선택지 문장도 백로그에 기록
-                    AddBacklog("선택", choices[index].text);
-
-                    SetChoicesVisible(false);
-
-                    if (advanceButton != null)
-                        advanceButton.gameObject.SetActive(advanceButtonPrevActive);
-
-                    onSelect?.Invoke(index);
-                });
-            }
-
-            Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(choicesContainer as RectTransform);
-        }
-
-        public void ClearChoices()
-        {
-            if (choicesContainer == null)
-                return;
-
-            for (int i = choicesContainer.childCount - 1; i >= 0; i--)
-            {
-                Destroy(choicesContainer.GetChild(i).gameObject);
-            }
-        }
-
-        public void ToggleBacklog()
-        {
-            if (backlogRoot == null)
-                return;
-
-            bool next = !backlogRoot.activeSelf;
-            backlogRoot.SetActive(next);
-
-            if (next)
-            {
-                // 열 때 최신 상태 반영 + 하단으로 강제 이동
-                RefreshBacklogText();
-                AutoScrollBacklogIfNeeded(forceToBottom: true);
-            }
-        }
-
-        private void SetChoicesVisible(bool visible)
-        {
-            if (choicesRoot != null)
-                choicesRoot.SetActive(visible);
-        }
-
-        private void SetBacklogVisible(bool visible)
-        {
-            if (backlogRoot != null)
-                backlogRoot.SetActive(visible);
+                if (advanceButton != null) advanceButton.gameObject.SetActive(advanceButtonPrevActive);
+                onSelect?.Invoke(index);
+            });
         }
     }
 }

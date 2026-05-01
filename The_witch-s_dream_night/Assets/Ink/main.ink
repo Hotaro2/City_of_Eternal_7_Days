@@ -1,7 +1,10 @@
 ﻿-> start
 
 === start ===
+#ch Watari center fade
 #speaker Scenario
+#bg Forest
+#bgm forest 
 달빛이 비추는 어두운 숲 속 (어두운 숲 속에 달빛이 비추는) 
 탁탁탁! (밑에 낮은시야로 무언가 지나감)
 #speaker Player
@@ -11,6 +14,7 @@
 -철푸덕- (발에 무언가가 걸려 넘어졌다.)
 #speaker Player
 아아...
+#shake 0.4 40
 #speaker Scenario
 터벅-터벅-
 #speaker Player
@@ -27,7 +31,9 @@
 누군지 모를 여인이 문을 열고 들어왔다. 그녀는 쟁반에 물 컵과 무언가 담긴 그릇을 들고 들어왔다.
 #speaker Player
 누...! 콜록!콜록!
+#bg City fade
 #speaker 마녀
+ 
 마른 입으로 말하려고 하니 그러지 여기 물.
 #speaker Player
 캬하아-!

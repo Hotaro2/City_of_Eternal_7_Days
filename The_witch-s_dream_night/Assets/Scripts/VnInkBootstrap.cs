@@ -1,86 +1,65 @@
-using System.Collections;
 using UnityEngine;
 
 namespace VN
 {
-    public sealed class VNInkBootstrap : MonoBehaviour
+    /// <summary>
+    /// 게임 시작 시 필요한 컴포넌트들을 조립(Wiring)하고 첫 스토리를 실행합니다.
+    /// </summary>
+    public sealed class VnInkBootstrap : MonoBehaviour
     {
+        [Header("Required Components")]
+        [SerializeField] private VNDirector director;
         [SerializeField] private TextAsset compiledInkJson;
-        [SerializeField] private VNUIController ui;
 
-        [Header("Optional")]
-        [SerializeField] private string startKnot = "start"; // 비우면 점프 안 함
+        [Header("Configuration")]
+        [SerializeField] private string startKnot = "start";
 
         private readonly InkStoryEngine engine = new();
 
         private void Start()
         {
-            if (compiledInkJson == null)
+            if (director == null)
             {
-                Debug.LogError("[VNInkBootstrap] compiledInkJson이 비어 있습니다. 컴파일된 JSON(TextAsset)을 연결하세요.");
-                return;
+                // [자가 복구] 씬에서 VNDirector를 찾아 할당 시도
+                director = FindFirstObjectByType<VNDirector>();
+                if (director == null)
+                {
+                    Debug.LogError("[VNInkBootstrap] VNDirector is missing in the scene.");
+                    return;
+                }
             }
 
-            if (ui == null)
+            if (compiledInkJson == null)
             {
-                Debug.LogError("[VNInkBootstrap] ui가 비어 있습니다. VNUIController를 연결하세요.");
+                Debug.LogError("[VNInkBootstrap] compiledInkJson is missing.");
                 return;
             }
 
             try
             {
+                // 1. 데이터 엔진 초기화
                 engine.Initialize(compiledInkJson);
 
-                if (!string.IsNullOrWhiteSpace(startKnot))
+                // 2. 디렉터 초기화 및 실행 권한 위임
+                director.Initialize(engine);
+
+                // 타이틀에서 '이어하기'를 눌렀는지 체크
+                if (PlayerPrefs.HasKey("LoadOnStart_Slot"))
                 {
-                    engine.JumpTo(startKnot);
+                    int slot = PlayerPrefs.GetInt("LoadOnStart_Slot");
+                    PlayerPrefs.DeleteKey("LoadOnStart_Slot"); // 사용 후 삭제
+                    director.Load(slot);
+                }
+                else
+                {
+                    director.Play(startKnot);
                 }
 
-                Debug.Log($"[VNInkBootstrap] Init OK. canContinue={engine.CanContinue()}, choices={engine.GetCurrentChoices().Count}");
-                StartCoroutine(Run());
+                Debug.Log("[VNInkBootstrap] Story started via VNDirector.");
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[VNInkBootstrap] Ink init failed: {e}");
-            }
-        }
-
-        private IEnumerator Run()
-        {
-            while (true)
-            {
-                while (engine.CanContinue())
-                {
-                    var line = engine.ContinueLine();
-
-                    // Speaker가 비어있으면 기존 화자 유지
-                    if (!string.IsNullOrWhiteSpace(line.Speaker))
-                        ui.SetSpeaker(line.Speaker);
-
-                    yield return ui.PresentLine(line.Text);
-
-                    ui.AddBacklog(line.Speaker, line.Text);
-                    yield return ui.WaitForAdvanceOrAuto(line.Text.Length);
-                }
-
-                var choices = engine.GetCurrentChoices();
-                if (choices != null && choices.Count > 0)
-                {
-                    int selected = -1;
-                    ui.ShowChoices(choices, idx => selected = idx);
-
-                    while (selected < 0)
-                        yield return null;
-
-                    // 선택한 문장도 백로그에 기록
-                    ui.AddBacklog("주인공", choices[selected].text);
-
-                    engine.ChooseChoiceIndex(selected);
-                    continue;
-                }
-
-                Debug.Log("[VNInkBootstrap] Story ended (no continue, no choices).");
-                break;
+                Debug.LogError($"[VNInkBootstrap] Bootstrap failed: {e}");
             }
         }
     }

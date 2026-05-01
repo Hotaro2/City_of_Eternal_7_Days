@@ -58,6 +58,19 @@ namespace VN
             story.ChoosePathString(knotName.Trim());
         }
 
+        public string GetStateJson()
+        {
+            EnsureInitialized();
+            return story.state.ToJson();
+        }
+
+        public void LoadStateJson(string json)
+        {
+            EnsureInitialized();
+            if (string.IsNullOrWhiteSpace(json)) return;
+            story.state.LoadJson(json);
+        }
+
         private static string ExtractSpeakerFromTags(List<string> tags)
         {
             // 태그 예시:

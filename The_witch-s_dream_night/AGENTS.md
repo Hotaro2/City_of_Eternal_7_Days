@@ -857,3 +857,23 @@ AGENTS.md 파일 수정 및 최신화 작업을 할 때 적혀 있는 내용을 
 1. 실제 플레이에서 `#shake` 직전 세이브 → Load → 다시 `#shake` 구간 진입 순서로 재현 테스트를 진행해, 지속 시간이 정상 종료되는지 확인.
 2. 원한다면 다음 단계로 `FadeBackgroundRoutine`, `FadeCharacterRoutine`도 `unscaledDeltaTime` 기반으로 통일할지 검토 가능.
 3. 추가로, 인게임에서 `Save/Load` 패널을 닫았을 때 옵션 메뉴/시간 정지가 자연스럽게 복귀하는지 UX 측면 재점검 권장.
+
+---
+
+## 📅 업데이트 날짜: 2026년 5월 1일 (저장 후 배경 전환 멈춤 버그 수정)
+
+### 🎯 1. 사용자 보고 증상
+- 인게임에서 배경 전환 직전 저장을 수행한 뒤, 저장/로드 패널을 닫고 다음 대사로 진행하면 `#bg ... fade` 배경 전환이 정상적으로 끝나지 않는 문제가 보고됨.
+
+### 🔍 2. 원인 분석
+- `VNOptionPanel.OpenSaveLoad()`는 옵션 메뉴에서 저장/로드 패널을 열 때 옵션 패널을 숨기지만, `Time.timeScale = 0f` 상태는 그대로 유지함.
+- 기존 `VNSaveLoadPanel.Close()`는 패널만 닫고 `Time.timeScale`을 복구하지 않았음.
+- 대사 진행과 텍스트 타이핑은 `unscaledDeltaTime` 계열을 사용하므로 계속 진행되는 것처럼 보였지만, `VNPresenter.FadeBackgroundRoutine()`은 `Time.deltaTime`을 사용하고 있어 `timeScale == 0` 상태에서는 페이드 시간이 증가하지 않았음.
+
+### 🛠 3. 반영한 수정 사항
+- `VNSaveLoadPanel.Close()`에서 인게임 패널(`director != null`)일 경우 `Time.timeScale = 1f`로 복구하도록 수정.
+- `VNPresenter.FadeBackgroundRoutine()`과 `FadeCharacterRoutine()`을 `Time.unscaledDeltaTime` 기반으로 변경하여 일시정지 상태가 남아도 연출 코루틴이 멈추지 않도록 보강.
+
+### 🧪 4. 검증 기준
+- 배경 전환 직전 저장 → 저장 패널 닫기 → 다음 대사 진행 → `#bg ... fade` 전환이 정상 완료되는지 확인.
+- 캐릭터 페이드도 동일한 시간 기준으로 동작하므로, 저장/옵션 UI 이후 캐릭터 등장 페이드가 멈추지 않는지 함께 확인.

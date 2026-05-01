@@ -132,7 +132,7 @@ namespace VN
 
             while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 color.a = Mathf.Clamp01(elapsed / duration);
                 fadeImg.color = color;
                 yield return null;
@@ -201,7 +201,7 @@ namespace VN
 
             while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 canvasGroup.alpha = fadeIn
                     ? Mathf.Clamp01(elapsed / duration)
                     : Mathf.Clamp01(1f - (elapsed / duration));

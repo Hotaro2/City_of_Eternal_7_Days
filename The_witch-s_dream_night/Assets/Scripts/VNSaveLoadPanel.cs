@@ -56,7 +56,13 @@ namespace VN
             RefreshSlots();
         }
 
-        public void Close() => gameObject.SetActive(false);
+        public void Close()
+        {
+            gameObject.SetActive(false);
+
+            if (director != null)
+                Time.timeScale = 1f;
+        }
 
         public void RefreshSlots()
         {

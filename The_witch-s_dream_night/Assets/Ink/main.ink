@@ -1,4 +1,6 @@
-﻿-> start
+﻿VAR affection = 0
+
+-> start
 
 === start ===
 #ch Watari center fade
@@ -25,7 +27,7 @@
 끼익-끼익-(목조 건물 소리)
 ...!
 -끼이익-(목조문이 열리는 소리)
-#speaker 마녀
+#speaker Player
 ?
 #speaker Scenario
 누군지 모를 여인이 문을 열고 들어왔다. 그녀는 쟁반에 물 컵과 무언가 담긴 그릇을 들고 들어왔다.
@@ -39,10 +41,25 @@
 캬하아-!
 #speaker 마녀
 그렇게 그냥 받아 마셔도 괜찮겠어?
+
 #speaker Player
 ...!
++ [뭐라도 들어있나요..?]
+   ~ affection += 1
+   -> after
+
++ [그냥 물이 아닌가요?]
+   ~ affection -= 1
+   -> after
+   
+=== after ===
+{affection >= 1:
 #speaker 마녀
-놀라지마 장난쳐 본 거야. 일어나 있었구나 
+   놀라지마 장난쳐 본 거야. 일어나 있었구나 
+- else:
+#speaker 마녀
+   내가 이상한 약이라도 탔을까봐?
+}
 집 마당 앞에 쓰러져 있길래 주워오긴 했는데 이름이 뭐야?
 #speaker Player
 (이름설정)OOO요.

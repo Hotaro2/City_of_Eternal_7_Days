@@ -850,3 +850,124 @@
 ### 🧪 4. 검증 기준
 - 배경 전환 직전 저장 → 저장 패널 닫기 → 다음 대사 진행 → `#bg ... fade` 전환이 정상 완료되는지 확인.
 - 캐릭터 페이드도 동일한 시간 기준으로 동작하므로, 저장/옵션 UI 이후 캐릭터 등장 페이드가 멈추지 않는지 함께 확인.
+
+---
+
+## 📅 업데이트 날짜: 2026년 5월 22일 (챕터 1 Ink 반영 및 프롤로그 전용 연출 시스템 구축)
+
+### 🎯 1. 이번 작업의 핵심 목표
+- PDF로 정리된 챕터 1 스토리 흐름을 기준으로 `main.ink`를 교체하고, 현재 2D 비주얼 노벨 구조에 맞지 않는 전투/튜토리얼 구간은 텍스트 연출과 효과음 지시문으로 대체.
+- 초반 프롤로그를 영상 레퍼런스처럼 **검은 화면 중앙 텍스트 + 클릭 진행 + 하단 선택지** 방식으로 구현.
+- 이후 다른 장면에서도 재사용할 수 있도록 Ink 태그 기반 화면 연출을 확장.
+- 증가한 스크립트 파일을 기능별 폴더로 정리하여 유지보수성을 개선.
+
+### 🛠 2. Ink 스토리 및 컴파일 작업
+- `Assets/Ink/main.ink`를 챕터 1 흐름 중심으로 재구성.
+  - `start` knot을 유지하여 기존 `VnInkBootstrap.startKnot = start` 설정과 호환되도록 보강.
+  - `VAR player_resolve = 0`를 전역 선언으로 추가하여 선택지 분기 변수 오류 해결.
+  - 전투 조작 튜토리얼은 실제 조작 대신 `[전투 연출]`, `[효과음]`, `#shake` 등 VN용 문구/연출로 대체.
+- `main.ink` 변경 후 `main.json`을 다시 컴파일.
+- Ink 태그의 `#` 문자 충돌 문제 확인:
+  - `<color=#ff6f7d>`가 Ink 태그로 오인되어 `<color=`만 출력되던 문제 발생.
+  - TMP 호환을 위해 `<color=red>이 세상이 멸망하기 전에.</color>` 형태로 수정.
+
+### 🎬 3. 프롤로그 전용 표시 모드 구현
+- `#mode prologue`
+  - 일반 대화창 대신 프롤로그 전용 UI 사용.
+  - 검은 화면, 중앙 텍스트, 하단 선택지 구성.
+- `#mode normal`
+  - 프롤로그 UI 종료 후 일반 VN 대화 UI로 복귀.
+- `#clear`
+  - 프롤로그 중앙 텍스트 누적 내용을 지워 다음 문장 묶음으로 전환.
+- `#textFade 초`
+  - 프롤로그 텍스트가 클릭 시 페이드인되도록 구현.
+  - 예: `#textFade 0.45`
+- 텍스트 페이드 구현 중 TMP `<alpha>` 태그 닫힘 문제 수정:
+  - 잘못된 `</alpha>` 태그가 화면에 잠깐 보이는 문제 발생.
+  - TMP 문법에 맞춰 `<alpha=#XX>문장<alpha=#FF>` 방식으로 수정.
+
+### 🧩 4. 프롤로그 UI를 Scene 기반으로 전환
+- 초기에는 프롤로그 검은 배경/텍스트/선택지를 코드에서 런타임 생성했으나, 사용자가 Scene View에서 직접 조정할 수 있도록 구조 변경.
+- `VNUIController`에 다음 참조 필드 추가:
+  - `prologueRoot`
+  - `prologueText`
+  - `prologueAdvanceButton`
+  - `prologueChoiceButtons`
+- `VNPrologueUISetupTool.cs` 추가:
+  - Unity 메뉴 `VN Tools > Setup Prologue UI`로 `PrologueOverlay`, `PrologueText`, `PrologueChoices`, `Choice_1`, `Choice_2` 생성 및 자동 연결.
+  - 생성된 오브젝트는 Scene/Inspector에서 직접 위치, 폰트 크기, 색상 조절 가능.
+
+### ✨ 5. 선택지 표시 및 클릭 효과 개선
+- 프롤로그 선택지 표시 시 `CanvasGroup` 기반 페이드인 구현.
+  - `prologueChoiceFadeSeconds`로 표시 속도 조절 가능.
+- `VNChoiceSelectionEffect.cs` 추가:
+  - 선택지를 클릭하면 선택한 항목이 살짝 확대되고 색이 밝아짐.
+  - 선택하지 않은 항목은 흐려진 뒤 전체 선택지가 사라짐.
+  - 프롤로그뿐 아니라 다른 선택지 버튼에도 붙여 재사용 가능한 모듈로 분리.
+- `VNPrologueUISetupTool`에서 생성되는 선택지 슬롯에 `CanvasGroup`, `VNChoiceSelectionEffect`가 자동 부착되도록 수정.
+
+### 🌑 6. 범용 화면 페이드 태그 추가
+- 화면 전체 페이드 인/아웃을 Ink에서 제어할 수 있도록 추가.
+- 지원 태그:
+  - `#fadeOut 0.8`
+  - `#fadeIn 0.8`
+  - `#afterFadeOut 0.8`
+  - `#afterFadeIn 0.8`
+- 색상 인자도 일부 지원:
+  - `black`
+  - `white`
+  - `red`
+  - `clear`
+- 프롤로그 마지막 문장 이후 다음 장면으로 넘어갈 때:
+  - 마지막 문장 확인 클릭 후 `#afterFadeOut 0.8` 실행.
+  - `collapse_preview` 진입 후 `#fadeIn 0.8` 실행.
+- 페이드 오버레이가 입력을 가로막지 않도록 `raycastTarget = false`로 조정.
+- `afterFadeOut` 실행 순서를 “문장 표시 직후”가 아니라 “플레이어가 클릭해 문장을 확인한 뒤”로 변경하여 암전 후 진행이 막히는 문제 수정.
+
+### 🧭 7. 현재 Ink 연출 태그 목록 정리
+- 기본 VN 연출:
+  - `#speaker 이름`
+  - `#bg 배경키 [fade]`
+  - `#ch 캐릭터명 [표정] [위치] [fade]`
+  - `#hide 캐릭터명 [fade]`
+  - `#shake 시간 강도`
+  - `#bgm 음악키`
+  - `#sfx 효과음키`
+- 프롤로그/화면 연출:
+  - `#mode prologue`
+  - `#mode normal`
+  - `#clear`
+  - `#textFade 초`
+  - `#fadeOut 초 [색상]`
+  - `#fadeIn 초 [색상]`
+  - `#afterFadeOut 초 [색상]`
+  - `#afterFadeIn 초 [색상]`
+
+### 🗂 8. 스크립트 폴더 구조 정리
+- `Assets/Scripts` 루트에 스크립트가 많아져 기능별 폴더로 이동.
+- `.cs` 파일과 `.meta` 파일을 함께 이동하여 Unity GUID 참조가 유지되도록 처리.
+- 정리된 구조:
+  - `Core/`: `VNDirector`, `VNCommandProcessor`, `VNLine`, `IVNPresenter`
+  - `Ink/`: `InkStoryEngine`, `VnInkBootstrap`
+  - `Presentation/`: `VNPresenter`, `VNAssetDatabase`
+  - `SaveLoad/`: `VNSaveData`, `VNSaveService`, `VNSaveLoadPanel`, `VNSaveSlotItem`
+  - `Settings/`: `VNSettingsData`
+  - `Title/`: `VNTitleManager`
+  - `UI/`: `VNUIController`, `VNTextTyper`, `VNButtonEffects`
+  - `UI/Backlog/`: `VNBacklogManager`, `VNBacklogEntry`
+  - `UI/Choices/`: `VNChoicePanel`, `VNChoiceSelectionEffect`
+  - `UI/Options/`: `VNOptionPanel`
+  - `Editor/`: 각종 Setup/Builder 도구
+- 로컬 빌드 검증을 위해 `Assembly-CSharp.csproj`의 Compile 경로도 새 폴더 구조에 맞춰 갱신.
+
+### 🧪 9. 검증 결과
+- `main.ink` → `main.json` 컴파일 성공.
+- `Assembly-CSharp.csproj` 빌드 통과.
+- `Assembly-CSharp-Editor.csproj` 빌드 통과.
+- 최종 확인 시점 기준 빌드 경고 0개 / 오류 0개.
+
+### 📌 10. 다음 작업 제안
+1. 스토리 파일을 `main.ink` 하나로 계속 키우기보다 `chapter_01.ink`, `chapter_02.ink` 등으로 분리하는 구조 검토.
+2. `main.ink`는 전역 변수와 INCLUDE/진입점만 담당하게 정리.
+3. 프롤로그 UI는 Scene에서 실제 해상도 기준으로 텍스트 위치, 선택지 크기, 페이드 속도를 플레이 테스트하며 조정.
+4. 다음 챕터 작업 전, 공통 Ink 연출 태그 사용 예시를 `effects.ink` 또는 문서로 정리하면 작업 효율이 좋아질 것으로 판단.

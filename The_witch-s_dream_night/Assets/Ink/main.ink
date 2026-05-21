@@ -1,5 +1,3 @@
-VAR player_resolve = 0
-
 -> start
 
 === start ===
@@ -627,11 +625,9 @@ BOSS 쿠루시 격파.
 그런데 그때, 남아있는 잔해에서 어떠한 힘이 느껴지더니 곧바로 지면에서 튀어 올랐다!
 
 + [몸을 옆으로 던진다.]
-    ~ player_resolve += 1
     -> dejavu_dodge
 
 + [안에게 경고한다.]
-    ~ player_resolve += 1
     -> dejavu_dodge
 
 === dejavu_dodge ===
@@ -780,7 +776,6 @@ BOSS 쿠루시 격파.
 지휘사 님, 우리와 함께 해주지 않으시겠어요?
 
 + [좋아요.]
-    ~ player_resolve += 1
     -> join_center
 
 + [제게 다른 선택지가 있나요?]

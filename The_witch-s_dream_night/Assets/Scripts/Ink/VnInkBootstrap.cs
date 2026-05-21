@@ -18,6 +18,8 @@ namespace VN
 
         private void Start()
         {
+            VNSettingsData.Load().ApplyDisplaySettings();
+
             if (director == null)
             {
                 // [자가 복구] 씬에서 VNDirector를 찾아 할당 시도

@@ -15,7 +15,7 @@ MonoBehaviour:
   backgrounds:
   - key: Forest
     sprite: {fileID: 1208040086343421634, guid: e26004d8faa35a44ea1024a72c492590, type: 3}
-  - key: City
+  - key: "\uC911\uC559\uCCAD"
     sprite: {fileID: 7379051995743214545, guid: 854bdf8107dc347418a8fe961ef139e2, type: 3}
   characters:
   - characterName: Watari

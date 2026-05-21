@@ -15,6 +15,7 @@ namespace VN
 
         public bool IsTyping => isTyping;
         public string CurrentText => lineText != null ? lineText.text : string.Empty;
+        public TMP_Text TextComponent => lineText;
 
         private void Awake()
         {

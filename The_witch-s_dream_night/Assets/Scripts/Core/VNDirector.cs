@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
+using System.Globalization;
 using UnityEngine;
 
 namespace VN
@@ -25,7 +27,7 @@ namespace VN
 
             if (presenter == null)
             {
-                var allMono = Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+                var allMono = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
                 foreach (var mono in allMono)
                 {
                     if (mono is IVNPresenter p)
@@ -139,12 +141,15 @@ namespace VN
                     if (commandProcessor != null)
                         commandProcessor.Process(line.Tags);
 
+                    yield return ProcessUITags(line.Tags, false);
+
                     if (!string.IsNullOrWhiteSpace(line.Speaker))
                         ui.SetSpeaker(line.Speaker);
 
                     yield return ui.PresentLine(line.Text);
                     ui.AddBacklog(line.Speaker, line.Text);
                     yield return ui.WaitForAdvanceOrAuto(line.Text.Length);
+                    yield return ProcessUITags(line.Tags, true);
                 }
 
                 var choices = engine.GetCurrentChoices();
@@ -161,6 +166,130 @@ namespace VN
                 break;
             }
             isPlaying = false;
+        }
+
+        private IEnumerator ProcessUITags(IReadOnlyList<string> tags, bool afterLine)
+        {
+            if (ui == null || tags == null) yield break;
+
+            for (int i = 0; i < tags.Count; i++)
+            {
+                string tag = tags[i];
+                if (string.IsNullOrWhiteSpace(tag)) continue;
+
+                tag = tag.Trim();
+                if (tag.StartsWith("#")) tag = tag.Substring(1).Trim();
+
+                bool isAfterFade = tag.StartsWith("afterFadeOut", StringComparison.OrdinalIgnoreCase)
+                    || tag.StartsWith("afterFadeIn", StringComparison.OrdinalIgnoreCase);
+                if (afterLine != isAfterFade) continue;
+
+                if (tag.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                {
+                    ui.ClearPrologueText();
+                    continue;
+                }
+
+                if (tag.StartsWith("mode", StringComparison.OrdinalIgnoreCase))
+                {
+                    int colon = tag.IndexOf(':');
+                    if (colon >= 0)
+                    {
+                        ui.SetPresentationMode(tag.Substring(colon + 1).Trim());
+                        continue;
+                    }
+
+                    var parts = tag.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 2)
+                    {
+                        ui.SetPresentationMode(parts[1].Trim());
+                    }
+                }
+
+                if (tag.StartsWith("textFade", StringComparison.OrdinalIgnoreCase)
+                    && TryReadFloatTagValue(tag, out float fadeSeconds))
+                {
+                    ui.SetPrologueTextFadeSeconds(fadeSeconds);
+                }
+
+                if (tag.StartsWith("fadeOut", StringComparison.OrdinalIgnoreCase)
+                    && TryReadFadeTag(tag, out float fadeOutSeconds, out Color fadeOutColor))
+                {
+                    yield return ui.FadeScreen(true, fadeOutSeconds, fadeOutColor);
+                }
+
+                if (tag.StartsWith("fadeIn", StringComparison.OrdinalIgnoreCase)
+                    && TryReadFadeTag(tag, out float fadeInSeconds, out Color fadeInColor))
+                {
+                    yield return ui.FadeScreen(false, fadeInSeconds, fadeInColor);
+                }
+
+                if (tag.StartsWith("afterFadeOut", StringComparison.OrdinalIgnoreCase)
+                    && TryReadFadeTag(tag, out float afterFadeOutSeconds, out Color afterFadeOutColor))
+                {
+                    yield return ui.FadeScreen(true, afterFadeOutSeconds, afterFadeOutColor);
+                }
+
+                if (tag.StartsWith("afterFadeIn", StringComparison.OrdinalIgnoreCase)
+                    && TryReadFadeTag(tag, out float afterFadeInSeconds, out Color afterFadeInColor))
+                {
+                    yield return ui.FadeScreen(false, afterFadeInSeconds, afterFadeInColor);
+                }
+            }
+        }
+
+        private static bool TryReadFloatTagValue(string tag, out float value)
+        {
+            value = 0f;
+            int colon = tag.IndexOf(':');
+            string rawValue = null;
+
+            if (colon >= 0)
+            {
+                rawValue = tag.Substring(colon + 1).Trim();
+            }
+            else
+            {
+                var parts = tag.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 2) rawValue = parts[1].Trim();
+            }
+
+            return !string.IsNullOrWhiteSpace(rawValue)
+                && float.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+        }
+
+        private static bool TryReadFadeTag(string tag, out float seconds, out Color color)
+        {
+            seconds = 0.5f;
+            color = Color.black;
+
+            var parts = tag.Split(new[] { ' ', ':' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2)
+            {
+                float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out seconds);
+            }
+
+            if (parts.Length >= 3)
+            {
+                color = ParseFadeColor(parts[2]);
+            }
+
+            return true;
+        }
+
+        private static Color ParseFadeColor(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return Color.black;
+
+            switch (raw.Trim().ToLowerInvariant())
+            {
+                case "white": return Color.white;
+                case "red": return Color.red;
+                case "clear": return Color.clear;
+                case "black":
+                default:
+                    return Color.black;
+            }
         }
     }
 }

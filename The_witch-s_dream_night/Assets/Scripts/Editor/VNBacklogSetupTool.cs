@@ -46,7 +46,7 @@ public class VNBacklogSetupTool : EditorWindow
         var cText = cObj.GetComponent<TextMeshProUGUI>(); if (koreanFont != null) cText.font = koreanFont;
         cText.fontSize = 28; cText.color = Color.white; 
         cText.alignment = TextAlignmentOptions.TopLeft; // 대화 내용 왼쪽 정렬
-        cText.enableWordWrapping = true;
+        cText.textWrappingMode = TextWrappingModes.Normal;
         cObj.GetComponent<LayoutElement>().flexibleWidth = 1;
 
         // 참조 연결

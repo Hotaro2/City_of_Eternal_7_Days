@@ -72,6 +72,7 @@ namespace VN
         private void ApplySavedAudioSettings()
         {
             VNSettingsData settings = VNSettingsData.Load();
+            settings.ApplyDisplaySettings();
             SetVolume(settings.masterVolume, settings.bgmVolume, settings.sfxVolume);
         }
 

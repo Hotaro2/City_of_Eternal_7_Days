@@ -23,7 +23,7 @@ namespace VN
                 contentText.ForceMeshUpdate();
                 
                 // 줄바꿈이 가로 폭에 맞춰지도록 강제 설정
-                contentText.enableWordWrapping = true;
+                contentText.textWrappingMode = TextWrappingModes.Normal;
                 contentText.overflowMode = TextOverflowModes.Overflow;
             }
 

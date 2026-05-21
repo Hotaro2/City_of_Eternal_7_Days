@@ -33,7 +33,11 @@ namespace VN
                 int index = i;
                 var btn = Instantiate(choiceButtonPrefab, container);
                 var textObj = btn.GetComponentInChildren<TMP_Text>();
-                if (textObj != null) textObj.text = choices[i].text;
+                if (textObj != null)
+                {
+                    VNKoreanFontFallback.ApplyTo(textObj);
+                    textObj.text = choices[i].text;
+                }
 
                 btn.onClick.AddListener(() =>
                 {

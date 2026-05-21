@@ -1,3 +1,6 @@
+VAR player_resolve = 0
+VAR player_name = "지휘사"
+
 -> start
 
 === start ===
@@ -211,13 +214,11 @@
 열심히 눈물을 닦으며 대답할 수밖에 없었다.
 
 #speaker 나
+#nameInput player_name 지휘사
 내... 이름은...
 
-#speaker System
-(이름 설정 기능은 추후 구현 예정입니다. 현재 스토리에서는 주인공을 「지휘사」로 표시합니다.)
-
 #speaker 안
-지휘사.
+{player_name}.
 이상한 이름이네요.
 
 #speaker 안

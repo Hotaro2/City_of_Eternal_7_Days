@@ -71,6 +71,14 @@ namespace VN
             story.state.LoadJson(json);
         }
 
+        public void SetVariable(string variableName, object value)
+        {
+            EnsureInitialized();
+            if (string.IsNullOrWhiteSpace(variableName)) return;
+
+            story.variablesState[variableName.Trim()] = value;
+        }
+
         private static string ExtractSpeakerFromTags(List<string> tags)
         {
             // 태그 예시:

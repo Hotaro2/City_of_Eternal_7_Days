@@ -23,6 +23,7 @@ namespace VN
         [Header("Save/Load")]
         [SerializeField] private VNOptionPanel optionPanel;
         [SerializeField] private VNSaveLoadPanel saveLoadPanel;
+        [SerializeField] private VNNameInputPanel nameInputPanel;
 
         [Header("Controls")]
         [SerializeField] private Button advanceButton;
@@ -67,6 +68,11 @@ namespace VN
 
         private void Awake()
         {
+            ResolveNameInputPanel();
+
+            VNKoreanFontFallback.ApplyToAllIn(gameObject);
+            if (prologueRoot != null) VNKoreanFontFallback.ApplyToAllIn(prologueRoot);
+
             if (advanceButton != null) advanceButton.onClick.AddListener(OnAdvancePressed);
             if (prologueAdvanceButton != null) prologueAdvanceButton.onClick.AddListener(OnAdvancePressed);
             if (backlogButton != null) backlogButton.onClick.AddListener(ToggleBacklog);
@@ -209,6 +215,33 @@ namespace VN
         public void OpenSaveLoad(VNSaveLoadPanel.PanelMode mode)
         {
             if (saveLoadPanel != null) saveLoadPanel.Open(mode);
+        }
+
+        public IEnumerator RequestNameInput(string defaultName, Action<string> onConfirm)
+        {
+            ResolveNameInputPanel();
+
+            if (nameInputPanel == null)
+            {
+                Debug.LogError("[VNUIController] Name input panel is not assigned. Run VN Tools/Setup Name Input UI or assign it in the Inspector.");
+                onConfirm?.Invoke(string.IsNullOrWhiteSpace(defaultName) ? "지휘사" : defaultName.Trim());
+                yield break;
+            }
+
+            bool done = false;
+            nameInputPanel.Open(defaultName, value =>
+            {
+                done = true;
+                onConfirm?.Invoke(value);
+            });
+
+            while (!done) yield return null;
+        }
+
+        private void ResolveNameInputPanel()
+        {
+            if (nameInputPanel != null) return;
+            nameInputPanel = FindFirstObjectByType<VNNameInputPanel>(FindObjectsInactive.Include);
         }
 
         public void ShowChoices(IReadOnlyList<Choice> choices, Action<int> onSelect)
@@ -369,7 +402,11 @@ namespace VN
                 button.gameObject.SetActive(true);
 
                 var label = button.GetComponentInChildren<TMP_Text>(true);
-                if (label != null) label.text = choices[i].text;
+                if (label != null)
+                {
+                    VNKoreanFontFallback.ApplyTo(label);
+                    label.text = choices[i].text;
+                }
 
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() =>

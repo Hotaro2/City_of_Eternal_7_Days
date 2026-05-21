@@ -148,6 +148,7 @@ namespace VN
 
                     yield return ui.PresentLine(line.Text);
                     ui.AddBacklog(line.Speaker, line.Text);
+                    yield return ProcessNameInputTags(line.Tags);
                     yield return ui.WaitForAdvanceOrAuto(line.Text.Length);
                     yield return ProcessUITags(line.Tags, true);
                 }
@@ -180,9 +181,9 @@ namespace VN
                 tag = tag.Trim();
                 if (tag.StartsWith("#")) tag = tag.Substring(1).Trim();
 
-                bool isAfterFade = tag.StartsWith("afterFadeOut", StringComparison.OrdinalIgnoreCase)
+                bool shouldProcessAfterLine = tag.StartsWith("afterFadeOut", StringComparison.OrdinalIgnoreCase)
                     || tag.StartsWith("afterFadeIn", StringComparison.OrdinalIgnoreCase);
-                if (afterLine != isAfterFade) continue;
+                if (afterLine != shouldProcessAfterLine) continue;
 
                 if (tag.Equals("clear", StringComparison.OrdinalIgnoreCase))
                 {
@@ -234,6 +235,29 @@ namespace VN
                     && TryReadFadeTag(tag, out float afterFadeInSeconds, out Color afterFadeInColor))
                 {
                     yield return ui.FadeScreen(false, afterFadeInSeconds, afterFadeInColor);
+                }
+
+            }
+        }
+
+        private IEnumerator ProcessNameInputTags(IReadOnlyList<string> tags)
+        {
+            if (ui == null || tags == null) yield break;
+
+            for (int i = 0; i < tags.Count; i++)
+            {
+                string tag = tags[i];
+                if (string.IsNullOrWhiteSpace(tag)) continue;
+
+                tag = tag.Trim();
+                if (tag.StartsWith("#")) tag = tag.Substring(1).Trim();
+
+                if (tag.StartsWith("nameInput", StringComparison.OrdinalIgnoreCase)
+                    && TryReadNameInputTag(tag, out string variableName, out string defaultName))
+                {
+                    string confirmedName = defaultName;
+                    yield return ui.RequestNameInput(defaultName, value => confirmedName = value);
+                    engine.SetVariable(variableName, confirmedName);
                 }
             }
         }
@@ -290,6 +314,18 @@ namespace VN
                 default:
                     return Color.black;
             }
+        }
+
+        private static bool TryReadNameInputTag(string tag, out string variableName, out string defaultName)
+        {
+            variableName = "player_name";
+            defaultName = "지휘사";
+
+            var parts = tag.Split(new[] { ' ', ':' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2) variableName = parts[1].Trim();
+            if (parts.Length >= 3) defaultName = parts[2].Trim();
+
+            return !string.IsNullOrWhiteSpace(variableName);
         }
     }
 }

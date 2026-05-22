@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0e7a1085c5377e14e92ead269d57e5fc
+guid: ffda9ad1a1241524994a53273b21382c
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - NanumSquareRound
+  - LINE Seed Sans App
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

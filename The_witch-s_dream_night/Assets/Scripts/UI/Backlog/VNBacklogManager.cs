@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,9 +18,13 @@ namespace VN
 
         private readonly List<BacklogData> backlogDataList = new();
         private readonly List<VNBacklogEntry> instantiatedEntries = new();
+        private Coroutine scrollRoutine;
 
         private void Awake()
         {
+            if (backlogRoot != null)
+                VNKoreanFontFallback.ApplyToAllIn(backlogRoot);
+
             if (closeButton != null)
             {
                 closeButton.onClick.RemoveAllListeners();
@@ -30,9 +35,9 @@ namespace VN
         public void AddEntry(string speaker, string content)
         {
             if (entryPrefab == null || container == null) return;
-            
+
             backlogDataList.Add(new BacklogData { speaker = speaker, text = content });
-            
+
             var newEntry = Instantiate(entryPrefab, container);
             newEntry.SetEntry(speaker, content);
             instantiatedEntries.Add(newEntry);
@@ -51,24 +56,23 @@ namespace VN
 
         public void ClearAndRestore(List<BacklogData> data)
         {
-            // 기존 오브젝트 제거
-            foreach (var entry in instantiatedEntries) Destroy(entry.gameObject);
+            foreach (var entry in instantiatedEntries)
+                Destroy(entry.gameObject);
+
             instantiatedEntries.Clear();
             backlogDataList.Clear();
 
-            // 데이터 복구
             foreach (var item in data)
-            {
                 AddEntry(item.speaker, item.text);
-            }
-            
+
             UpdateScroll(true);
         }
 
         public void ToggleBacklog()
         {
             if (backlogRoot == null) return;
-            if (backlogRoot.activeSelf) CloseBacklog(); else OpenBacklog();
+            if (backlogRoot.activeSelf) CloseBacklog();
+            else OpenBacklog();
         }
 
         public void OpenBacklog()
@@ -86,9 +90,22 @@ namespace VN
 
         private void UpdateScroll(bool force = false)
         {
-            if (scrollRect == null) return;
-            Canvas.ForceUpdateCanvases();
-            if (force) scrollRect.verticalNormalizedPosition = 0f;
+            if (scrollRect == null || !force) return;
+
+            if (scrollRoutine != null)
+                StopCoroutine(scrollRoutine);
+
+            scrollRoutine = StartCoroutine(SetScrollNextFrame());
+        }
+
+        private IEnumerator SetScrollNextFrame()
+        {
+            yield return null;
+
+            if (scrollRect != null)
+                scrollRect.verticalNormalizedPosition = 0f;
+
+            scrollRoutine = null;
         }
     }
 }

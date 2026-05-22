@@ -27,7 +27,7 @@ namespace VN.Editor
                 return;
             }
 
-            var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NanumSquareRoundB SDF.asset");
+            TMP_FontAsset fontAsset = null;
 
             var panel = GameObject.Find("NameInputPanel");
             if (panel == null)

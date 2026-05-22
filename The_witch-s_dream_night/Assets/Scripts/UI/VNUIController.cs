@@ -70,6 +70,7 @@ namespace VN
         {
             ResolveNameInputPanel();
 
+            VNKoreanFontFallback.ApplyToAllLoadedScenes();
             VNKoreanFontFallback.ApplyToAllIn(gameObject);
             if (prologueRoot != null) VNKoreanFontFallback.ApplyToAllIn(prologueRoot);
 
@@ -298,6 +299,7 @@ namespace VN
             prologueLines.Clear();
             if (prologueText != null)
             {
+                VNKoreanFontFallback.ApplyTo(prologueText);
                 prologueText.text = string.Empty;
                 prologueText.maxVisibleCharacters = int.MaxValue;
             }
@@ -306,6 +308,7 @@ namespace VN
         private IEnumerator PresentPrologueLine(string text)
         {
             if (prologueText == null) yield break;
+            VNKoreanFontFallback.ApplyTo(prologueText);
 
             if (!string.IsNullOrWhiteSpace(text))
             {

@@ -45,6 +45,7 @@ namespace VN
 
             if (optionPanel == null) optionPanel = Object.FindFirstObjectByType<VNOptionPanel>(FindObjectsInactive.Include);
             if (saveLoadPanel == null) saveLoadPanel = Object.FindFirstObjectByType<VNSaveLoadPanel>(FindObjectsInactive.Include);
+            ApplyLineSeedFontToSceneText();
 
             if (fader != null)
             {
@@ -67,6 +68,16 @@ namespace VN
             scenePresenter = FindFirstObjectByType<VNPresenter>();
             ApplySavedAudioSettings();
             PlayTitleBGM();
+        }
+
+        private static void ApplyLineSeedFontToSceneText()
+        {
+            var canvases = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                if (canvases[i] != null)
+                    VNKoreanFontFallback.ApplyToAllIn(canvases[i].gameObject);
+            }
         }
 
         private void ApplySavedAudioSettings()

@@ -20,6 +20,7 @@ namespace VN
         private void Awake()
         {
             currentSecondsPerChar = defaultSecondsPerChar;
+            VNKoreanFontFallback.ApplyTo(lineText);
         }
 
         public void SetSpeed(float secondsPerChar)
@@ -35,6 +36,7 @@ namespace VN
         public void ShowImmediate(string text)
         {
             if (lineText == null) return;
+            VNKoreanFontFallback.ApplyTo(lineText);
             lineText.text = text;
             lineText.maxVisibleCharacters = int.MaxValue;
             isTyping = false;
@@ -43,6 +45,7 @@ namespace VN
         public IEnumerator TypeText(string text, bool instant = false)
         {
             if (lineText == null) yield break;
+            VNKoreanFontFallback.ApplyTo(lineText);
 
             if (instant)
             {

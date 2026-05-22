@@ -45,6 +45,12 @@ namespace VN
             if (titleText != null) titleText.text = DefaultTitle;
             if (inputField != null)
             {
+                if (inputField.textComponent != null)
+                    VNKoreanFontFallback.ApplyTo(inputField.textComponent);
+
+                if (inputField.placeholder is TMP_Text placeholderText)
+                    VNKoreanFontFallback.ApplyTo(placeholderText);
+
                 inputField.text = fallbackName;
                 inputField.ActivateInputField();
                 inputField.Select();

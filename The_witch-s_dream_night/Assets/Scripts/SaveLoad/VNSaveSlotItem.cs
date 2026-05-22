@@ -28,6 +28,7 @@ namespace VN
             onSlotClicked = onClick;
 
             EnsureReferences();
+            VNKoreanFontFallback.ApplyToAllIn(gameObject);
 
             if (data != null)
             {

@@ -41,7 +41,7 @@ namespace VN.Editor
             }
 
             Undo.RecordObject(optionPanel.gameObject, "Setup Option UI Final");
-            var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NanumSquareRoundB SDF.asset");
+            TMP_FontAsset fontAsset = null;
             for (int i = optionPanel.transform.childCount - 1; i >= 0; i--) Object.DestroyImmediate(optionPanel.transform.GetChild(i).gameObject);
             
             GameObject mainBox = CreateUIObject("MainFrame", optionPanel.transform, typeof(Image));
@@ -131,7 +131,7 @@ namespace VN.Editor
             bgImg.GetComponent<RectTransform>().anchorMin = Vector2.zero; bgImg.GetComponent<RectTransform>().anchorMax = Vector2.one;
             bgImg.GetComponent<RectTransform>().offsetMin = bgImg.GetComponent<RectTransform>().offsetMax = Vector2.zero;
 
-            var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NanumSquareRoundB SDF.asset");
+            TMP_FontAsset fontAsset = null;
             GameObject logo = CreateUIObject("Logo", canvasObj.transform, typeof(TextMeshProUGUI));
             var logoTmp = logo.GetComponent<TextMeshProUGUI>();
             logoTmp.text = "THE WITCH'S DREAM NIGHT"; logoTmp.font = fontAsset; logoTmp.fontSize = 90; logoTmp.alignment = TextAlignmentOptions.Center;

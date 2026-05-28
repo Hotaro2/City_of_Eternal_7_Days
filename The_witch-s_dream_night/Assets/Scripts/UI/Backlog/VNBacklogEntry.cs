@@ -11,8 +11,6 @@ namespace VN
 
         public void SetEntry(string speaker, string content)
         {
-            VNKoreanFontFallback.ApplyToAllIn(gameObject);
-
             if (speakerText != null)
             {
                 speakerText.text = string.IsNullOrWhiteSpace(speaker) ? "" : speaker;

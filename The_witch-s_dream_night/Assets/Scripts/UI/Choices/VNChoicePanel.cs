@@ -35,7 +35,6 @@ namespace VN
                 var textObj = btn.GetComponentInChildren<TMP_Text>();
                 if (textObj != null)
                 {
-                    VNKoreanFontFallback.ApplyTo(textObj);
                     textObj.text = choices[i].text;
                 }
 

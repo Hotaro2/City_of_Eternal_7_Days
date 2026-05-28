@@ -556,7 +556,6 @@ namespace VN.Editor
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.color = color;
             tmp.raycastTarget = false;
-            VNKoreanFontFallback.ApplyTo(tmp);
             return tmp;
         }
 

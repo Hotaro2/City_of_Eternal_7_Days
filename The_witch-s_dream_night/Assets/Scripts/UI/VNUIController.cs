@@ -70,10 +70,6 @@ namespace VN
         {
             ResolveNameInputPanel();
 
-            VNKoreanFontFallback.ApplyToAllLoadedScenes();
-            VNKoreanFontFallback.ApplyToAllIn(gameObject);
-            if (prologueRoot != null) VNKoreanFontFallback.ApplyToAllIn(prologueRoot);
-
             if (advanceButton != null) advanceButton.onClick.AddListener(OnAdvancePressed);
             if (prologueAdvanceButton != null) prologueAdvanceButton.onClick.AddListener(OnAdvancePressed);
             if (backlogButton != null) backlogButton.onClick.AddListener(ToggleBacklog);
@@ -349,7 +345,6 @@ namespace VN
             prologueLines.Clear();
             if (prologueText != null)
             {
-                VNKoreanFontFallback.ApplyTo(prologueText);
                 prologueText.text = string.Empty;
                 prologueText.maxVisibleCharacters = int.MaxValue;
             }
@@ -358,7 +353,6 @@ namespace VN
         private IEnumerator PresentPrologueLine(string text)
         {
             if (prologueText == null) yield break;
-            VNKoreanFontFallback.ApplyTo(prologueText);
 
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -460,7 +454,6 @@ namespace VN
                 var label = button.GetComponentInChildren<TMP_Text>(true);
                 if (label != null)
                 {
-                    VNKoreanFontFallback.ApplyTo(label);
                     label.text = choices[i].text;
                 }
 

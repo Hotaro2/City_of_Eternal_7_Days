@@ -22,6 +22,7 @@ namespace VN
 
         [Header("Settings")]
         [SerializeField] private int maxSlots = 9;
+        [SerializeField] private string gameSceneName = "VNScene";
 
         private PanelMode currentMode;
         private List<VNSaveSlotItem> slotItems = new List<VNSaveSlotItem>();
@@ -154,7 +155,7 @@ namespace VN
                     {
                         // 타이틀 씬 대응: 슬롯 정보를 저장하고 게임 씬 로드
                         PlayerPrefs.SetInt("LoadOnStart_Slot", slot);
-                        UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
+                        UnityEngine.SceneManagement.SceneManager.LoadScene(gameSceneName);
                     }
                 }
                 else

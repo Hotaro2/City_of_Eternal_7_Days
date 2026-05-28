@@ -22,9 +22,6 @@ namespace VN
 
         private void Awake()
         {
-            if (backlogRoot != null)
-                VNKoreanFontFallback.ApplyToAllIn(backlogRoot);
-
             if (closeButton != null)
             {
                 closeButton.onClick.RemoveAllListeners();

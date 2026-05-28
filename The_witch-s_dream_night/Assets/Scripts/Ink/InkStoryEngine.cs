@@ -79,6 +79,41 @@ namespace VN
             story.variablesState[variableName.Trim()] = value;
         }
 
+        public bool TrySetVariable(string variableName, object value)
+        {
+            EnsureInitialized();
+            if (string.IsNullOrWhiteSpace(variableName)) return false;
+
+            try
+            {
+                story.variablesState[variableName.Trim()] = value;
+                return true;
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning($"[InkStoryEngine] Failed to set Ink variable '{variableName}': {exception.Message}");
+                return false;
+            }
+        }
+
+        public bool TryGetVariable(string variableName, out object value)
+        {
+            EnsureInitialized();
+            value = null;
+            if (string.IsNullOrWhiteSpace(variableName)) return false;
+
+            try
+            {
+                value = story.variablesState[variableName.Trim()];
+                return true;
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning($"[InkStoryEngine] Failed to get Ink variable '{variableName}': {exception.Message}");
+                return false;
+            }
+        }
+
         public string GetVariableString(string variableName)
         {
             EnsureInitialized();

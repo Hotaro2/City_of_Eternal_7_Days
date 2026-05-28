@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c15d8689a98b4af3b2cd43d546080c87, type: 3}
+  m_Name: QTE_Sequence_001
+  m_EditorClassIdentifier: Assembly-CSharp::VN.MiniGames.SequenceQTEMiniGameDefinition
+  miniGameId: qte_sequence_001
+  resultVariableName: qte_sequence_success
+  successVariableChanges:
+  - variableName: 
+    operation: 0
+    valueType: 0
+    boolValue: 0
+    intValue: 0
+    floatValue: 0
+    stringValue: 
+  failVariableChanges:
+  - variableName: 
+    operation: 0
+    valueType: 0
+    boolValue: 0
+    intValue: 0
+    floatValue: 0
+    stringValue: 
+  inputPool: 1101000012010000140100001301000020000000
+  sequenceLength: 5
+  roundCount: 2
+  timeLimitSeconds: 15
+  mistakeLimit: 2
+  successScore: 200
+  failScore: 0
+  successRank: Good
+  failRank: Fail
+  successFlag: qte_sequence_success_flag
+  failFlag: qte_sequence_fail_flag
+  promptText: Enter the sequence!
+  correctSfx: {fileID: 0}
+  wrongSfx: {fileID: 0}
+  successSfx: {fileID: 0}
+  failSfx: {fileID: 0}

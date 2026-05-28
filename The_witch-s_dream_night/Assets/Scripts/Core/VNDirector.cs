@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Globalization;
 using UnityEngine;
+using VN.MiniGames;
 
 namespace VN
 {
@@ -11,6 +12,7 @@ namespace VN
         [Header("Components")]
         [SerializeField] private VNUIController ui;
         [SerializeField] private MonoBehaviour presenterComponent;
+        [SerializeField] private MiniGameManager miniGameManager;
 
         private InkStoryEngine engine;
         private VNCommandProcessor commandProcessor;
@@ -44,6 +46,9 @@ namespace VN
 
             if (presenter != null)
                 commandProcessor = new VNCommandProcessor(presenter);
+
+            if (miniGameManager == null)
+                miniGameManager = FindFirstObjectByType<MiniGameManager>(FindObjectsInactive.Include);
         }
 
         private void Update()
@@ -147,6 +152,7 @@ namespace VN
                         commandProcessor.Process(line.Tags);
 
                     yield return ProcessUITags(line.Tags, false);
+                    yield return ProcessMiniGameTags(line.Tags);
 
                     string displaySpeaker = ResolveDisplaySpeaker(line.Speaker);
                     if (!string.IsNullOrWhiteSpace(displaySpeaker))
@@ -274,6 +280,135 @@ namespace VN
                         playerNameConfirmed = true;
                 }
             }
+        }
+
+        private IEnumerator ProcessMiniGameTags(IReadOnlyList<string> tags)
+        {
+            if (tags == null) yield break;
+
+            for (int i = 0; i < tags.Count; i++)
+            {
+                string tag = tags[i];
+                if (string.IsNullOrWhiteSpace(tag)) continue;
+
+                tag = tag.Trim();
+                if (tag.StartsWith("#")) tag = tag.Substring(1).Trim();
+
+                if (!tag.StartsWith("minigame", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!TryReadStringTagValue(tag, out string miniGameId)) continue;
+
+                if (miniGameManager == null)
+                    miniGameManager = FindFirstObjectByType<MiniGameManager>(FindObjectsInactive.Include);
+
+                if (miniGameManager == null)
+                {
+                    Debug.LogError($"[VNDirector] MiniGameManager is missing. Cannot run mini game: {miniGameId}. Open this scene and run VN Tools > MiniGames > Install Overlay In Active Scene.");
+                    continue;
+                }
+
+                bool completed = false;
+                MiniGameResult result = null;
+                bool started = miniGameManager.StartMiniGame(miniGameId, miniGameResult =>
+                {
+                    result = miniGameResult;
+                    completed = true;
+                });
+
+                if (!started)
+                {
+                    Debug.LogWarning($"[VNDirector] Mini game could not start: {miniGameId}");
+                    continue;
+                }
+
+                while (!completed)
+                    yield return null;
+
+                ApplyMiniGameResultToInk(result);
+            }
+        }
+
+        private void ApplyMiniGameResultToInk(MiniGameResult result)
+        {
+            if (result == null || engine == null || !engine.IsInitialized) return;
+
+            string baseVariable = !string.IsNullOrWhiteSpace(result.resultVariableName)
+                ? result.resultVariableName.Trim()
+                : $"{result.miniGameId}_success";
+
+            engine.TrySetVariable(baseVariable, result.isSuccess);
+            engine.TrySetVariable($"{baseVariable}_score", result.score);
+            engine.TrySetVariable($"{baseVariable}_rank", result.rank ?? string.Empty);
+
+            if (!string.IsNullOrWhiteSpace(result.gainedFlag))
+                engine.TrySetVariable(result.gainedFlag, true);
+
+            if (result.variableChanges == null) return;
+            for (int i = 0; i < result.variableChanges.Count; i++)
+                ApplyMiniGameVariableChange(result.variableChanges[i]);
+        }
+
+        private void ApplyMiniGameVariableChange(MiniGameInkVariableChange change)
+        {
+            if (change == null || engine == null || !engine.IsInitialized) return;
+            if (string.IsNullOrWhiteSpace(change.VariableName)) return;
+
+            string variableName = change.VariableName.Trim();
+            if (change.Operation == MiniGameVariableOperation.Add)
+            {
+                ApplyMiniGameVariableAdd(variableName, change);
+                return;
+            }
+
+            engine.TrySetVariable(variableName, change.GetSetValue());
+        }
+
+        private void ApplyMiniGameVariableAdd(string variableName, MiniGameInkVariableChange change)
+        {
+            if (change.ValueType != MiniGameVariableValueType.Int
+                && change.ValueType != MiniGameVariableValueType.Float)
+            {
+                Debug.LogWarning($"[VNDirector] Add operation supports only Int or Float values: {variableName}");
+                return;
+            }
+
+            object current = null;
+            engine.TryGetVariable(variableName, out current);
+
+            if (change.ValueType == MiniGameVariableValueType.Int)
+            {
+                int currentValue = ConvertToInt(current);
+                engine.TrySetVariable(variableName, currentValue + change.IntValue);
+                return;
+            }
+
+            float currentFloat = ConvertToFloat(current);
+            engine.TrySetVariable(variableName, currentFloat + change.FloatValue);
+        }
+
+        private static int ConvertToInt(object value)
+        {
+            return value switch
+            {
+                int intValue => intValue,
+                float floatValue => Mathf.RoundToInt(floatValue),
+                double doubleValue => (int)Math.Round(doubleValue),
+                bool boolValue => boolValue ? 1 : 0,
+                string stringValue when int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) => parsed,
+                _ => 0
+            };
+        }
+
+        private static float ConvertToFloat(object value)
+        {
+            return value switch
+            {
+                float floatValue => floatValue,
+                double doubleValue => (float)doubleValue,
+                int intValue => intValue,
+                bool boolValue => boolValue ? 1f : 0f,
+                string stringValue when float.TryParse(stringValue, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsed) => parsed,
+                _ => 0f
+            };
         }
 
         private string ResolveDisplaySpeaker(string speaker)

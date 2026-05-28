@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94f1ff83977c4505bb00590e778225a2, type: 3}
+  m_Name: QTE_Defense_001
+  m_EditorClassIdentifier: Assembly-CSharp::VN.MiniGames.QTEMiniGameDefinition
+  miniGameId: qte_defense_001
+  resultVariableName: qte_defense_success
+  successVariableChanges: []
+  failVariableChanges: []
+  requiredKey: 32
+  timeLimitSeconds: 5
+  successScore: 100
+  failScore: 0
+  successRank: Good
+  failRank: Fail
+  successFlag: qte_defense_success_flag
+  failFlag: qte_defense_fail_flag
+  promptText: "\uACF5\uACA9\uC744 \uB9C9\uC544\uB0B4\uC138\uC694"
+  backgroundSprite: {fileID: 0}
+  requiredKeySprite: {fileID: 0}
+  successSfx: {fileID: 0}
+  failSfx: {fileID: 0}

@@ -274,7 +274,7 @@ namespace VN
 
             if (nameInputPanel == null)
             {
-                Debug.LogError("[VNUIController] Name input panel is not assigned. Run VN Tools/Setup Name Input UI or assign it in the Inspector.");
+                Debug.LogError("[VNUIController] Name input panel is not assigned. Assign it in the Inspector.");
                 onConfirm?.Invoke(string.IsNullOrWhiteSpace(defaultName) ? "지휘사" : defaultName.Trim());
                 yield break;
             }
@@ -324,7 +324,7 @@ namespace VN
             {
                 if (!HasPrologueUI())
                 {
-                    Debug.LogError("[VNUIController] Prologue UI is not assigned. Run VN Tools/Setup Prologue UI or assign the scene objects in the Inspector.");
+                    Debug.LogError("[VNUIController] Prologue UI is not assigned. Assign the scene objects in the Inspector.");
                     return;
                 }
 

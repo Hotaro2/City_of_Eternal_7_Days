@@ -24,6 +24,19 @@ namespace VN.MiniGames
         [Header("Presentation")]
         [TextArea]
         [SerializeField] private string promptText = "Enter the sequence!";
+        [SerializeField] private Sprite backgroundSprite;
+        [SerializeField] private Sprite characterSprite;
+        [SerializeField] private Sprite keySlotSprite;
+        [SerializeField] private Sprite currentKeySlotSprite;
+        [SerializeField] private Sprite completeKeySlotSprite;
+        [SerializeField] private Sprite failedKeySlotSprite;
+        [SerializeField] private Sprite upKeySprite;
+        [SerializeField] private Sprite downKeySprite;
+        [SerializeField] private Sprite leftKeySprite;
+        [SerializeField] private Sprite rightKeySprite;
+        [SerializeField] private Sprite spaceKeySprite;
+        [SerializeField] private Sprite successSprite;
+        [SerializeField] private Sprite failSprite;
         [SerializeField] private AudioClip correctSfx;
         [SerializeField] private AudioClip wrongSfx;
         [SerializeField] private AudioClip successSfx;
@@ -42,9 +55,30 @@ namespace VN.MiniGames
         public string SuccessFlag => successFlag;
         public string FailFlag => failFlag;
         public string PromptText => promptText;
+        public Sprite BackgroundSprite => backgroundSprite;
+        public Sprite CharacterSprite => characterSprite;
+        public Sprite KeySlotSprite => keySlotSprite;
+        public Sprite CurrentKeySlotSprite => currentKeySlotSprite;
+        public Sprite CompleteKeySlotSprite => completeKeySlotSprite;
+        public Sprite FailedKeySlotSprite => failedKeySlotSprite;
+        public Sprite SuccessSprite => successSprite;
+        public Sprite FailSprite => failSprite;
         public AudioClip CorrectSfx => correctSfx;
         public AudioClip WrongSfx => wrongSfx;
         public AudioClip SuccessSfx => successSfx;
         public AudioClip FailSfx => failSfx;
+
+        public Sprite GetKeySprite(KeyCode key)
+        {
+            return key switch
+            {
+                KeyCode.UpArrow => upKeySprite,
+                KeyCode.DownArrow => downKeySprite,
+                KeyCode.LeftArrow => leftKeySprite,
+                KeyCode.RightArrow => rightKeySprite,
+                KeyCode.Space => spaceKeySprite,
+                _ => null
+            };
+        }
     }
 }

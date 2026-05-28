@@ -19,11 +19,18 @@ namespace VN.MiniGames
         [SerializeField] private List<TMP_Text> keyTexts = new();
 
         [Header("Images")]
+        [SerializeField] private Image backgroundImage;
+        [SerializeField] private Image characterImage;
+        [SerializeField] private Image resultImage;
         [SerializeField] private Image timerFillImage;
+        [SerializeField] private List<Image> keySlotImages = new();
+        [SerializeField] private List<Image> keyIconImages = new();
         [SerializeField] private Color pendingColor = new(0.85f, 0.86f, 0.9f, 1f);
         [SerializeField] private Color currentColor = new(1f, 0.88f, 0.25f, 1f);
         [SerializeField] private Color completeColor = new(0.35f, 0.95f, 0.62f, 1f);
         [SerializeField] private Color failedColor = new(0.95f, 0.25f, 0.34f, 1f);
+
+        private SequenceQTEMiniGameDefinition currentDefinition;
 
         public void SetVisible(bool visible)
         {
@@ -35,6 +42,7 @@ namespace VN.MiniGames
         {
             ResolveRoot();
             SetVisible(true);
+            currentDefinition = definition;
 
             if (promptText != null) promptText.text = definition.PromptText;
             if (roundText != null) roundText.text = string.Empty;
@@ -42,6 +50,9 @@ namespace VN.MiniGames
             if (mistakeText != null) mistakeText.text = $"Mistakes 0 / {definition.MistakeLimit}";
             if (resultText != null) resultText.text = string.Empty;
 
+            ApplySprite(backgroundImage, definition.BackgroundSprite, true);
+            ApplySprite(characterImage, definition.CharacterSprite, false);
+            ApplySprite(resultImage, null, false);
             UpdateTimer(definition.TimeLimitSeconds, definition.TimeLimitSeconds);
         }
 
@@ -50,27 +61,28 @@ namespace VN.MiniGames
             if (roundText != null) roundText.text = $"Round {roundIndex + 1} / {roundCount}";
             if (mistakeText != null) mistakeText.text = $"Mistakes {mistakes} / {mistakeLimit}";
 
-            for (int i = 0; i < keyTexts.Count; i++)
+            int visibleCount = Mathf.Max(keyTexts.Count, keySlotImages.Count, keyIconImages.Count);
+            for (int i = 0; i < visibleCount; i++)
             {
-                TMP_Text keyText = keyTexts[i];
-                if (keyText == null) continue;
-
                 bool hasKey = sequence != null && i < sequence.Count;
-                keyText.gameObject.SetActive(hasKey);
+                SetKeyObjectActive(i, hasKey);
                 if (!hasKey) continue;
 
-                keyText.text = FormatKey(sequence[i]);
-                keyText.color = GetKeyColor(i, currentIndex);
+                KeyCode key = sequence[i];
+                ApplyKeySlot(i, GetKeySlotSprite(i, currentIndex), GetKeyColor(i, currentIndex));
+                ApplyKeyIcon(i, key, currentDefinition != null ? currentDefinition.GetKeySprite(key) : null, GetKeyColor(i, currentIndex));
             }
         }
 
         public void ShowMistake(IReadOnlyList<KeyCode> sequence, int currentIndex)
         {
-            if (sequence == null || currentIndex < 0 || currentIndex >= keyTexts.Count) return;
+            if (sequence == null || currentIndex < 0) return;
             if (currentIndex >= sequence.Count) return;
 
-            TMP_Text keyText = keyTexts[currentIndex];
-            if (keyText != null) keyText.color = failedColor;
+            if (currentIndex < keyTexts.Count && keyTexts[currentIndex] != null)
+                keyTexts[currentIndex].color = failedColor;
+
+            ApplyKeySlot(currentIndex, currentDefinition != null ? currentDefinition.FailedKeySlotSprite : null, failedColor);
         }
 
         public void UpdateTimer(float remainingSeconds, float totalSeconds)
@@ -84,8 +96,13 @@ namespace VN.MiniGames
 
         public void ShowResult(bool isSuccess, string rank)
         {
-            if (resultText == null) return;
-            resultText.text = isSuccess ? $"SUCCESS\n{rank}" : $"FAIL\n{rank}";
+            if (resultText != null)
+                resultText.text = isSuccess ? $"SUCCESS\n{rank}" : $"FAIL\n{rank}";
+
+            Sprite resultSprite = null;
+            if (currentDefinition != null)
+                resultSprite = isSuccess ? currentDefinition.SuccessSprite : currentDefinition.FailSprite;
+            ApplySprite(resultImage, resultSprite, false);
         }
 
         private void ResolveRoot()
@@ -100,6 +117,55 @@ namespace VN.MiniGames
             return pendingColor;
         }
 
+        private Sprite GetKeySlotSprite(int index, int currentIndex)
+        {
+            if (currentDefinition == null) return null;
+            if (index < currentIndex && currentDefinition.CompleteKeySlotSprite != null) return currentDefinition.CompleteKeySlotSprite;
+            if (index == currentIndex && currentDefinition.CurrentKeySlotSprite != null) return currentDefinition.CurrentKeySlotSprite;
+            return currentDefinition.KeySlotSprite;
+        }
+
+        private void SetKeyObjectActive(int index, bool active)
+        {
+            if (index < keySlotImages.Count && keySlotImages[index] != null)
+                keySlotImages[index].gameObject.SetActive(active);
+            if (index < keyIconImages.Count && keyIconImages[index] != null && !active)
+                keyIconImages[index].gameObject.SetActive(false);
+            if (index < keyTexts.Count && keyTexts[index] != null)
+                keyTexts[index].gameObject.SetActive(active);
+        }
+
+        private void ApplyKeySlot(int index, Sprite sprite, Color fallbackColor)
+        {
+            if (index >= keySlotImages.Count || keySlotImages[index] == null) return;
+
+            Image slot = keySlotImages[index];
+            slot.sprite = sprite;
+            slot.color = sprite != null ? Color.white : new Color(fallbackColor.r, fallbackColor.g, fallbackColor.b, 0.18f);
+            slot.enabled = true;
+        }
+
+        private void ApplyKeyIcon(int index, KeyCode key, Sprite sprite, Color fallbackColor)
+        {
+            Image icon = index < keyIconImages.Count ? keyIconImages[index] : null;
+            TMP_Text text = index < keyTexts.Count ? keyTexts[index] : null;
+
+            if (icon != null)
+            {
+                icon.sprite = sprite;
+                icon.color = Color.white;
+                icon.enabled = sprite != null;
+                icon.gameObject.SetActive(sprite != null);
+            }
+
+            if (text != null)
+            {
+                text.text = FormatKey(key);
+                text.color = fallbackColor;
+                text.gameObject.SetActive(sprite == null);
+            }
+        }
+
         private static string FormatKey(KeyCode key)
         {
             return key switch
@@ -111,6 +177,14 @@ namespace VN.MiniGames
                 KeyCode.Space => "SPACE",
                 _ => key.ToString().ToUpperInvariant()
             };
+        }
+
+        private static void ApplySprite(Image image, Sprite sprite, bool visibleWhenMissing)
+        {
+            if (image == null) return;
+            image.sprite = sprite;
+            image.enabled = sprite != null || visibleWhenMissing;
+            image.gameObject.SetActive(sprite != null || visibleWhenMissing);
         }
     }
 }

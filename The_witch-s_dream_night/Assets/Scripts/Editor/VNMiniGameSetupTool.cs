@@ -16,6 +16,9 @@ namespace VN.Editor
         private const string DefaultSequenceQteId = "qte_sequence_001";
         private const string QteDefinitionPath = "Assets/ScriptObjects/MiniGames/QTE_Defense_001.asset";
         private const string SequenceDefinitionPath = "Assets/ScriptObjects/MiniGames/QTE_Sequence_001.asset";
+        private const string MiniGamePrefabFolder = "Assets/Prefabs/MiniGames";
+        private const string QtePanelPrefabPath = MiniGamePrefabFolder + "/QTEPanel.prefab";
+        private const string SequenceQtePanelPrefabPath = MiniGamePrefabFolder + "/SequenceQTEPanel.prefab";
 
         [MenuItem("VN Tools/MiniGames/Install Overlay In Active Scene")]
         public static void InstallOverlayInActiveScene()
@@ -23,6 +26,7 @@ namespace VN.Editor
             EnsureEventSystem();
 
             Canvas canvas = EnsureCanvas();
+            CleanupObsoleteObjects(canvas.transform);
             MiniGameManager manager = EnsureManager();
             QTEView view = EnsureQtePanel(canvas.transform);
             QTEMiniGame qte = EnsureQteModule(manager.transform, view);
@@ -65,6 +69,28 @@ namespace VN.Editor
             Debug.Log("[VN Tools] 현재 열린 씬에 MiniGameCanvas, MiniGameManager, QTE Definition을 구성했습니다.");
         }
 
+        [MenuItem("VN Tools/MiniGames/Save Current Panels As Prefabs")]
+        public static void SaveCurrentPanelsAsPrefabs()
+        {
+            Canvas canvas = GameObject.Find("MiniGameCanvas")?.GetComponent<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[VN Tools] MiniGameCanvas가 없습니다. 먼저 Install Overlay In Active Scene을 실행하세요.");
+                return;
+            }
+
+            CleanupObsoleteObjects(canvas.transform);
+            QTEView qteView = EnsureQtePanel(canvas.transform);
+            SequenceQTEView sequenceView = EnsureSequenceQtePanel(canvas.transform);
+
+            SavePanelPrefab(qteView.gameObject, QtePanelPrefabPath);
+            SavePanelPrefab(sequenceView.gameObject, SequenceQtePanelPrefabPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("[VN Tools] MiniGame 패널 프리팹을 저장했습니다.");
+        }
+
         private static Canvas EnsureCanvas()
         {
             GameObject canvasObject = GameObject.Find("MiniGameCanvas");
@@ -105,8 +131,12 @@ namespace VN.Editor
             GameObject panel = canvasTransform.Find("QTEPanel")?.gameObject;
             if (panel == null)
             {
-                panel = CreateUIObject("QTEPanel", canvasTransform, typeof(Image), typeof(QTEView));
-                Undo.RegisterCreatedObjectUndo(panel, "Create QTE Panel");
+                panel = InstantiatePanelPrefab(QtePanelPrefabPath, canvasTransform, "QTEPanel");
+                if (panel == null)
+                {
+                    panel = CreateUIObject("QTEPanel", canvasTransform, typeof(Image), typeof(QTEView));
+                    Undo.RegisterCreatedObjectUndo(panel, "Create QTE Panel");
+                }
             }
 
             Stretch(panel.GetComponent<RectTransform>());
@@ -178,13 +208,26 @@ namespace VN.Editor
             GameObject panel = canvasTransform.Find("SequenceQTEPanel")?.gameObject;
             if (panel == null)
             {
-                panel = CreateUIObject("SequenceQTEPanel", canvasTransform, typeof(Image), typeof(SequenceQTEView));
-                Undo.RegisterCreatedObjectUndo(panel, "Create Sequence QTE Panel");
+                panel = InstantiatePanelPrefab(SequenceQtePanelPrefabPath, canvasTransform, "SequenceQTEPanel");
+                if (panel == null)
+                {
+                    panel = CreateUIObject("SequenceQTEPanel", canvasTransform, typeof(Image), typeof(SequenceQTEView));
+                    Undo.RegisterCreatedObjectUndo(panel, "Create Sequence QTE Panel");
+                }
             }
 
             Stretch(panel.GetComponent<RectTransform>());
             Image panelImage = panel.GetComponent<Image>();
             panelImage.color = new Color(0.025f, 0.028f, 0.038f, 0.97f);
+
+            Image background = EnsureImage(panel.transform, "BackgroundImage", new Color(0.025f, 0.028f, 0.038f, 1f));
+            Stretch(background.rectTransform);
+            background.transform.SetAsFirstSibling();
+
+            Image character = EnsureImage(panel.transform, "CharacterImage", Color.clear);
+            SetAnchored(character.rectTransform, new Vector2(0.62f, 0.18f), new Vector2(0.94f, 0.82f), Vector2.zero, Vector2.zero);
+            character.preserveAspect = true;
+            character.enabled = false;
 
             TMP_Text prompt = EnsureText(panel.transform, "PromptText", "ENTER THE SEQUENCE", 38f, Color.white);
             SetAnchored(prompt.rectTransform, new Vector2(0.18f, 0.72f), new Vector2(0.82f, 0.84f), Vector2.zero, Vector2.zero);
@@ -201,12 +244,28 @@ namespace VN.Editor
             SetAnchored(keyRow.GetComponent<RectTransform>(), new Vector2(0.18f, 0.43f), new Vector2(0.82f, 0.58f), Vector2.zero, Vector2.zero);
 
             var keyTexts = new TMP_Text[12];
+            var keySlots = new Image[12];
+            var keyIcons = new Image[12];
             for (int i = 0; i < keyTexts.Length; i++)
             {
                 TMP_Text key = EnsureText(keyRow.transform, $"Key_{i + 1:00}", i < 5 ? "SPACE" : string.Empty, 28f, Color.white);
                 float width = 1f / keyTexts.Length;
                 SetAnchored(key.rectTransform, new Vector2(width * i + 0.004f, 0f), new Vector2(width * (i + 1) - 0.004f, 1f), Vector2.zero, Vector2.zero);
+
+                Image slot = EnsureImage(key.transform, "KeySlot", new Color(1f, 1f, 1f, 0.12f));
+                Stretch(slot.rectTransform);
+                slot.transform.SetAsFirstSibling();
+                slot.color = new Color(1f, 1f, 1f, 0.12f);
+                slot.raycastTarget = false;
+
+                Image icon = EnsureImage(key.transform, "KeyIcon", Color.white);
+                Stretch(icon.rectTransform);
+                icon.preserveAspect = true;
+                icon.enabled = false;
+
                 keyTexts[i] = key;
+                keySlots[i] = slot;
+                keyIcons[i] = icon;
             }
 
             GameObject timerFrame = panel.transform.Find("TimerFrame")?.gameObject;
@@ -234,6 +293,11 @@ namespace VN.Editor
             TMP_Text result = EnsureText(panel.transform, "ResultText", "", 42f, Color.white);
             SetAnchored(result.rectTransform, new Vector2(0.18f, 0.08f), new Vector2(0.82f, 0.2f), Vector2.zero, Vector2.zero);
 
+            Image resultImage = EnsureImage(panel.transform, "ResultImage", Color.white);
+            SetAnchored(resultImage.rectTransform, new Vector2(0.36f, 0.06f), new Vector2(0.64f, 0.22f), Vector2.zero, Vector2.zero);
+            resultImage.preserveAspect = true;
+            resultImage.enabled = false;
+
             SequenceQTEView view = panel.GetComponent<SequenceQTEView>();
             var viewSo = new SerializedObject(view);
             viewSo.FindProperty("root").objectReferenceValue = panel;
@@ -242,6 +306,9 @@ namespace VN.Editor
             viewSo.FindProperty("timerText").objectReferenceValue = timer;
             viewSo.FindProperty("mistakeText").objectReferenceValue = mistakes;
             viewSo.FindProperty("resultText").objectReferenceValue = result;
+            viewSo.FindProperty("backgroundImage").objectReferenceValue = background;
+            viewSo.FindProperty("characterImage").objectReferenceValue = character;
+            viewSo.FindProperty("resultImage").objectReferenceValue = resultImage;
             viewSo.FindProperty("timerFillImage").objectReferenceValue = timerFill;
 
             var keyTextsProp = viewSo.FindProperty("keyTexts");
@@ -250,6 +317,22 @@ namespace VN.Editor
             {
                 keyTextsProp.InsertArrayElementAtIndex(i);
                 keyTextsProp.GetArrayElementAtIndex(i).objectReferenceValue = keyTexts[i];
+            }
+
+            var keySlotsProp = viewSo.FindProperty("keySlotImages");
+            keySlotsProp.ClearArray();
+            for (int i = 0; i < keySlots.Length; i++)
+            {
+                keySlotsProp.InsertArrayElementAtIndex(i);
+                keySlotsProp.GetArrayElementAtIndex(i).objectReferenceValue = keySlots[i];
+            }
+
+            var keyIconsProp = viewSo.FindProperty("keyIconImages");
+            keyIconsProp.ClearArray();
+            for (int i = 0; i < keyIcons.Length; i++)
+            {
+                keyIconsProp.InsertArrayElementAtIndex(i);
+                keyIconsProp.GetArrayElementAtIndex(i).objectReferenceValue = keyIcons[i];
             }
             viewSo.ApplyModifiedProperties();
 
@@ -400,6 +483,48 @@ namespace VN.Editor
             Undo.RegisterCreatedObjectUndo(eventSystem, "Create EventSystem");
         }
 
+        private static void CleanupObsoleteObjects(Transform canvasTransform)
+        {
+            DestroyChildIfExists(canvasTransform, "DebugResultText");
+
+            if (!IsMiniGameScene())
+            {
+                DestroyChildIfExists(canvasTransform, "MiniGameTestStatusText");
+
+                MiniGameManager manager = GameObject.Find("MiniGameManager")?.GetComponent<MiniGameManager>();
+                MiniGameTestLauncher launcher = manager != null ? manager.GetComponent<MiniGameTestLauncher>() : null;
+                if (launcher != null) Undo.DestroyObjectImmediate(launcher);
+            }
+        }
+
+        private static void DestroyChildIfExists(Transform parent, string childName)
+        {
+            Transform child = parent != null ? parent.Find(childName) : null;
+            if (child != null) Undo.DestroyObjectImmediate(child.gameObject);
+        }
+
+        private static GameObject InstantiatePanelPrefab(string prefabPath, Transform parent, string fallbackName)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (prefab == null) return null;
+
+            var instance = PrefabUtility.InstantiatePrefab(prefab, parent) as GameObject;
+            if (instance == null) return null;
+
+            instance.name = fallbackName;
+            Undo.RegisterCreatedObjectUndo(instance, $"Create {fallbackName} From Prefab");
+            return instance;
+        }
+
+        private static void SavePanelPrefab(GameObject panel, string prefabPath)
+        {
+            if (panel == null) return;
+
+            Directory.CreateDirectory(MiniGamePrefabFolder);
+            PrefabUtility.SaveAsPrefabAssetAndConnect(panel, prefabPath, InteractionMode.UserAction);
+            EditorUtility.SetDirty(panel);
+        }
+
         private static Image EnsureImage(Transform parent, string name, Color color)
         {
             GameObject imageObject = parent.Find(name)?.gameObject;
@@ -410,6 +535,7 @@ namespace VN.Editor
             }
 
             Image image = imageObject.GetComponent<Image>();
+            if (image == null) image = imageObject.AddComponent<Image>();
             image.color = color;
             return image;
         }
@@ -424,6 +550,7 @@ namespace VN.Editor
             }
 
             TextMeshProUGUI tmp = textObject.GetComponent<TextMeshProUGUI>();
+            if (tmp == null) tmp = textObject.AddComponent<TextMeshProUGUI>();
             tmp.text = text;
             tmp.fontSize = fontSize;
             tmp.alignment = TextAlignmentOptions.Center;

@@ -136,6 +136,56 @@ namespace VN
         public void SetAutoWaitMultiplier(float multiplier) => autoWaitMultiplier = Mathf.Max(0.1f, multiplier);
         public void SetPrologueTextFadeSeconds(float seconds) => prologueTextFadeSeconds = Mathf.Max(0f, seconds);
 
+        public void SetPrologueTheme(string theme)
+        {
+            if (prologueRoot == null || prologueText == null) return;
+
+            var background = prologueRoot.GetComponent<Image>();
+            RectTransform textRect = prologueText.rectTransform;
+            string normalized = string.IsNullOrWhiteSpace(theme) ? "default" : theme.Trim().ToLowerInvariant();
+
+            switch (normalized)
+            {
+                case "systemwhite":
+                case "white":
+                    if (background != null) background.color = Color.white;
+                    prologueText.color = new Color(0.12f, 0.12f, 0.13f, 1f);
+                    prologueText.fontSize = 30f;
+                    prologueText.alignment = TextAlignmentOptions.TopLeft;
+                    prologueText.lineSpacing = 16f;
+                    textRect.anchorMin = new Vector2(0.16f, 0.18f);
+                    textRect.anchorMax = new Vector2(0.84f, 0.82f);
+                    textRect.offsetMin = Vector2.zero;
+                    textRect.offsetMax = Vector2.zero;
+                    break;
+
+                case "systemblack":
+                case "black":
+                    if (background != null) background.color = Color.black;
+                    prologueText.color = new Color(0.94f, 0.94f, 0.94f, 1f);
+                    prologueText.fontSize = 42f;
+                    prologueText.alignment = TextAlignmentOptions.Center;
+                    prologueText.lineSpacing = 20f;
+                    textRect.anchorMin = new Vector2(0.08f, 0.28f);
+                    textRect.anchorMax = new Vector2(0.92f, 0.72f);
+                    textRect.offsetMin = Vector2.zero;
+                    textRect.offsetMax = Vector2.zero;
+                    break;
+
+                default:
+                    if (background != null) background.color = new Color(0.035f, 0.028f, 0.033f, 1f);
+                    prologueText.color = new Color(0.94f, 0.94f, 0.94f, 1f);
+                    prologueText.fontSize = 34f;
+                    prologueText.alignment = TextAlignmentOptions.Center;
+                    prologueText.lineSpacing = 20f;
+                    textRect.anchorMin = new Vector2(0.08f, 0.32f);
+                    textRect.anchorMax = new Vector2(0.92f, 0.86f);
+                    textRect.offsetMin = Vector2.zero;
+                    textRect.offsetMax = Vector2.zero;
+                    break;
+            }
+        }
+
         public IEnumerator FadeScreen(bool fadeOut, float seconds, Color color)
         {
             EnsureScreenFadeImage();
@@ -317,22 +367,25 @@ namespace VN
 
             string fullText = string.Join("\n\n", prologueLines);
 
-            if (SkipMode || prologueTextFadeSeconds <= 0f)
+            if (SkipMode)
             {
                 prologueText.text = fullText;
                 prologueText.maxVisibleCharacters = int.MaxValue;
                 yield break;
             }
 
-            int lastIndex = prologueLines.Count - 1;
-            float fadeTimer = 0f;
-            while (fadeTimer < prologueTextFadeSeconds)
+            if (prologueTextFadeSeconds > 0f)
             {
-                fadeTimer += Time.unscaledDeltaTime;
-                float alpha = Mathf.Clamp01(fadeTimer / prologueTextFadeSeconds);
-                prologueText.text = BuildPrologueTextWithFadingLine(lastIndex, alpha);
-                prologueText.maxVisibleCharacters = int.MaxValue;
-                yield return null;
+                int lastIndex = prologueLines.Count - 1;
+                float fadeTimer = 0f;
+                while (fadeTimer < prologueTextFadeSeconds)
+                {
+                    fadeTimer += Time.unscaledDeltaTime;
+                    float alpha = Mathf.Clamp01(fadeTimer / prologueTextFadeSeconds);
+                    prologueText.text = BuildPrologueTextWithFadingLine(lastIndex, alpha);
+                    prologueText.maxVisibleCharacters = int.MaxValue;
+                    yield return null;
+                }
             }
 
             prologueText.text = fullText;

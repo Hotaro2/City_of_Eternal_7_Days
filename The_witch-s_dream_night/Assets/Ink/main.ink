@@ -101,8 +101,8 @@ VAR player_name = "지휘사"
 더 이상 커지게 둬서는 안 돼요!
 
 #speaker Scenario
-[전투 연출] 검은 안개 속에서 날카로운 발톱들이 튀어나온다.
-[효과음] 카앙! 카앙! 은빛 검격이 어둠을 가른다.
+검은 안개 속에서 날카로운 발톱들이 튀어나온다.
+카앙! 카앙! 은빛 검격이 어둠을 가른다.
 
 #speaker 안
 왜 그래요? 긴장했어요?
@@ -117,7 +117,7 @@ VAR player_name = "지휘사"
 이런 잡몹들에게 전력을 다할 필요는 없잖아요. 가요!
 
 #speaker Scenario
-[전투 연출] 작은 몬스터들이 쓰러지고, 안개 사이에서 거대한 그림자가 일어선다.
+작은 몬스터들이 쓰러지고, 안개 사이에서 거대한 그림자가 일어선다.
 #shake 0.25 18
 변이체 출현.
 
@@ -131,9 +131,9 @@ VAR player_name = "지휘사"
 저 녀석에게 우리의 무서움을 보여 주자구요!
 
 #speaker Scenario
-[전투 연출] 시간이 거꾸로 감기듯 검은 파편들이 허공에서 멈춘다.
-[효과음] 키이이잉...
-[전투 연출] 다음 순간, 은빛 궤적이 변이체를 관통한다.
+시간이 거꾸로 감기듯 검은 파편들이 허공에서 멈춘다.
+키이이잉...
+다음 순간, 은빛 궤적이 변이체를 관통한다.
 #shake 0.35 35
 변이체 격파.
 
@@ -142,7 +142,7 @@ VAR player_name = "지휘사"
 생명결정을 먹으면 생명력을 일정량 회복할 수 있어요.
 
 #speaker Scenario
-[효과음] 맑은 결정이 바닥에 떨어져 울린다.
+맑은 결정이 바닥에 떨어져 울린다.
 생명결정 획득.
 
 #speaker 안
@@ -150,46 +150,58 @@ VAR player_name = "지휘사"
 그럼 이제... 마지막 전투에 들어가죠!
 
 #speaker Scenario
-[애니메이션 대체 연출] 옥상이 거대흑문에 빨려 들어간다.
-[애니메이션 대체 연출] 안이 붙잡히고, 도시 전체가 하얀 빛 속에서 무너진다.
+옥상이 거대흑문에 빨려 들어간다.
+안이 붙잡히고, 도시 전체가 하얀 빛 속에서 무너진다.
 #shake 0.6 45
+#clear
 
-#speaker System
+#mode prologue
+#prologueTheme systemWhite
+#fadeOut 0 white
+#fadeIn 0.8 white
+#textFade 0.45
+#clear
 「신기사」 탈진... 사망 확인.
 이번 전투 기록 - 성공.
 생존자 수색 중...
-잔존율 상승 감지. 잔존율 0.0045002%.
+잔존율 상승 감지. 잔존율 <color=red>0.0045002%</color>.
 실시간 데이터 삭제 시작...
+#clear
 새로운 데이터로 등록 중...
 심박수 확인 중...
 리소스 확인 중...
 시스템 준비 완료.
 시간 설정 7일.
 언제든지 구동 가능합니다.
-
-#speaker System
-세계 재구성... 시작.
+#clear
+#prologueTheme systemBlack
+#afterFadeOut 0.8 black
+「세계 재구성... 시작」
+#clear
 -> new_seven_days
 
 === new_seven_days ===
-#bg Black fade
-#bgm silence
-#speaker ???
-...어이...
-들려...?
+#fadeIn 0.8 black
+#clear
+...이봐... 들려...?
+#clear
 일어나...
-계속 깨어나지 않는다면...
-이 세계는...
+#clear
+#afterFadeOut 0.8 black
+<color=red>계속 깨어나지 않는다면... 이 세계는...</color>
+#mode normal
+#textFade 0.7
+#bg ControlRoom
+#fadeIn 0.8 black
 
 #speaker 나
 우와--!
 
-#bg ControlRoom fade
 #speaker 안
 아, 깨어났군요!
 
 #speaker Scenario
-[효과음] 쿡쿡.
+쿡쿡.
 누군가가 손끝으로 내 볼을 찌르고 있었다.
 
 #speaker 안

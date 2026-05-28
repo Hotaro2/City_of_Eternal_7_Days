@@ -16,6 +16,9 @@ namespace VN
         private VNCommandProcessor commandProcessor;
         private bool isPlaying;
         private bool skipNextContinue; // 로드 직후 첫 대사 진행을 막는 플래그
+        private bool playerNameConfirmed;
+        private const string PlayerNameVariable = "player_name";
+        private const string DefaultPlayerName = "지휘사";
 
         public string CurrentChapter { get; set; } = "Chapter 1";
         public float PlayTime { get; private set; }
@@ -71,6 +74,7 @@ namespace VN
                 activeCharacters = presenter?.GetCurrentCharacters() ?? new List<VNCharacterState>(),
                 lastSpeaker = ui.CurrentSpeaker,
                 lastText = ui.CurrentText,
+                playerNameConfirmed = this.playerNameConfirmed,
                 chapterTitle = CurrentChapter,
                 playTime = PlayTime,
                 backlog = ui.GetBacklogData() // 백로그 추출
@@ -111,6 +115,7 @@ namespace VN
             
             CurrentChapter = data.chapterTitle;
             PlayTime = data.playTime;
+            playerNameConfirmed = data.playerNameConfirmed || HasCustomPlayerName();
 
             // 로드 직후 바로 다음 대사로 넘어가지 않도록 설정
             skipNextContinue = true;
@@ -143,11 +148,12 @@ namespace VN
 
                     yield return ProcessUITags(line.Tags, false);
 
-                    if (!string.IsNullOrWhiteSpace(line.Speaker))
-                        ui.SetSpeaker(line.Speaker);
+                    string displaySpeaker = ResolveDisplaySpeaker(line.Speaker);
+                    if (!string.IsNullOrWhiteSpace(displaySpeaker))
+                        ui.SetSpeaker(displaySpeaker);
 
                     yield return ui.PresentLine(line.Text);
-                    ui.AddBacklog(line.Speaker, line.Text);
+                    ui.AddBacklog(displaySpeaker, line.Text);
                     yield return ProcessNameInputTags(line.Tags);
                     yield return ui.WaitForAdvanceOrAuto(line.Text.Length);
                     yield return ProcessUITags(line.Tags, true);
@@ -160,7 +166,7 @@ namespace VN
                     ui.ShowChoices(choices, idx => selected = idx);
                     while (selected < 0) yield return null;
 
-                    ui.AddBacklog("Player", choices[selected].text);
+                    ui.AddBacklog(ResolveDisplaySpeaker("Player"), choices[selected].text);
                     engine.ChooseChoiceIndex(selected);
                     continue;
                 }
@@ -213,6 +219,12 @@ namespace VN
                     ui.SetPrologueTextFadeSeconds(fadeSeconds);
                 }
 
+                if (tag.StartsWith("prologueTheme", StringComparison.OrdinalIgnoreCase)
+                    && TryReadStringTagValue(tag, out string theme))
+                {
+                    ui.SetPrologueTheme(theme);
+                }
+
                 if (tag.StartsWith("fadeOut", StringComparison.OrdinalIgnoreCase)
                     && TryReadFadeTag(tag, out float fadeOutSeconds, out Color fadeOutColor))
                 {
@@ -258,8 +270,36 @@ namespace VN
                     string confirmedName = defaultName;
                     yield return ui.RequestNameInput(defaultName, value => confirmedName = value);
                     engine.SetVariable(variableName, confirmedName);
+                    if (string.Equals(variableName, PlayerNameVariable, StringComparison.OrdinalIgnoreCase))
+                        playerNameConfirmed = true;
                 }
             }
+        }
+
+        private string ResolveDisplaySpeaker(string speaker)
+        {
+            if (string.IsNullOrWhiteSpace(speaker)) return string.Empty;
+            if (!IsPlayerSpeakerAlias(speaker)) return speaker;
+            if (!playerNameConfirmed) return speaker;
+
+            string playerName = engine.GetVariableString(PlayerNameVariable);
+            return string.IsNullOrWhiteSpace(playerName) ? DefaultPlayerName : playerName.Trim();
+        }
+
+        private static bool IsPlayerSpeakerAlias(string speaker)
+        {
+            return speaker.Equals(DefaultPlayerName, StringComparison.OrdinalIgnoreCase)
+                || speaker.Equals("나", StringComparison.OrdinalIgnoreCase)
+                || speaker.Equals("Player", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool HasCustomPlayerName()
+        {
+            if (engine == null || !engine.IsInitialized) return false;
+
+            string playerName = engine.GetVariableString(PlayerNameVariable);
+            return !string.IsNullOrWhiteSpace(playerName)
+                && !playerName.Trim().Equals(DefaultPlayerName, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool TryReadFloatTagValue(string tag, out float value)
@@ -280,6 +320,24 @@ namespace VN
 
             return !string.IsNullOrWhiteSpace(rawValue)
                 && float.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+        }
+
+        private static bool TryReadStringTagValue(string tag, out string value)
+        {
+            value = null;
+            int colon = tag.IndexOf(':');
+
+            if (colon >= 0)
+            {
+                value = tag.Substring(colon + 1).Trim();
+            }
+            else
+            {
+                var parts = tag.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 2) value = parts[1].Trim();
+            }
+
+            return !string.IsNullOrWhiteSpace(value);
         }
 
         private static bool TryReadFadeTag(string tag, out float seconds, out Color color)

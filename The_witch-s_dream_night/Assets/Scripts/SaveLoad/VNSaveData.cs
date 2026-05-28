@@ -20,6 +20,7 @@ namespace VN
         public float playTime;
         public string lastText;
         public string lastSpeaker;
+        public bool playerNameConfirmed;
 
         public List<BacklogData> backlog = new List<BacklogData>(); // 백로그 저장
 

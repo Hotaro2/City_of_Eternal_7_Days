@@ -78,6 +78,7 @@ namespace VN
             if (prologueRoot != null) prologueRoot.SetActive(false);
             if (saveLoadPanel != null) saveLoadPanel.Close();
             if (optionPanel != null) optionPanel.Close();
+            EnsureDialogueTextRenderable();
         }
 
         private void Update()
@@ -105,6 +106,7 @@ namespace VN
         public void SetSpeaker(string speaker)
         {
             if (isPrologueMode) return;
+            EnsureDialogueTextRenderable();
             if (speakerText != null) speakerText.text = speaker ?? string.Empty;
         }
 
@@ -123,6 +125,7 @@ namespace VN
             }
 
             if (typer == null) yield break;
+            EnsureDialogueTextRenderable();
             yield return typer.TypeText(text, SkipMode);
             
             // 스킵 모드일 때 대사가 출력되자마자 사라지는 것을 방지하기 위한 최소한의 찰나 대기
@@ -336,8 +339,21 @@ namespace VN
             isPrologueMode = false;
             ClearPrologueChoices();
             if (prologueRoot != null) prologueRoot.SetActive(false);
-            if (speakerText != null) speakerText.gameObject.SetActive(true);
-            if (typer != null && typer.TextComponent != null) typer.TextComponent.gameObject.SetActive(true);
+            EnsureDialogueTextRenderable();
+        }
+
+        private void EnsureDialogueTextRenderable()
+        {
+            if (speakerText != null)
+            {
+                speakerText.enabled = true;
+                speakerText.gameObject.SetActive(true);
+            }
+
+            if (typer != null)
+            {
+                typer.EnsureTextRenderable();
+            }
         }
 
         public void ClearPrologueText()

@@ -20,6 +20,14 @@ namespace VN
         private void Awake()
         {
             currentSecondsPerChar = defaultSecondsPerChar;
+            EnsureTextRenderable();
+        }
+
+        public void EnsureTextRenderable()
+        {
+            if (lineText == null) return;
+            lineText.enabled = true;
+            lineText.gameObject.SetActive(true);
         }
 
         public void SetSpeed(float secondsPerChar)
@@ -35,6 +43,7 @@ namespace VN
         public void ShowImmediate(string text)
         {
             if (lineText == null) return;
+            EnsureTextRenderable();
             lineText.text = text;
             lineText.maxVisibleCharacters = int.MaxValue;
             isTyping = false;
@@ -43,6 +52,7 @@ namespace VN
         public IEnumerator TypeText(string text, bool instant = false)
         {
             if (lineText == null) yield break;
+            EnsureTextRenderable();
 
             if (instant)
             {

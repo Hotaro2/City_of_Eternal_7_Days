@@ -7,6 +7,10 @@ namespace VN.MiniGames
 {
     public sealed class SequenceQTEMiniGame : MonoBehaviour, IMiniGameModule
     {
+        private static readonly KeyCode[] KeyboardKeys = Array.FindAll(
+            (KeyCode[])Enum.GetValues(typeof(KeyCode)),
+            key => (int)key < (int)KeyCode.Mouse0);
+
         [SerializeField] private SequenceQTEView view;
         [SerializeField] private AudioSource sfxSource;
         [SerializeField] private float wrongFlashSeconds = 0.12f;
@@ -122,9 +126,21 @@ namespace VN.MiniGames
 
             MiniGameResult result = CreateResult(success);
             PlaySfx(success ? currentDefinition.SuccessSfx : currentDefinition.FailSfx);
-            view?.ShowResult(success, result.rank);
+            bool hasResultScreen = view != null && view.ShowResult(success, result.rank);
 
-            yield return new WaitForSecondsRealtime(Mathf.Max(0f, resultHoldSeconds));
+            if (hasResultScreen)
+            {
+                yield return new WaitForSecondsRealtime(Mathf.Max(1.25f, resultHoldSeconds));
+                while (IsContinueInputPressed())
+                    yield return null;
+                yield return null;
+                while (!IsContinueInputDown())
+                    yield return null;
+            }
+            else
+            {
+                yield return new WaitForSecondsRealtime(Mathf.Max(0f, resultHoldSeconds));
+            }
 
             routine = null;
             view?.SetVisible(false);
@@ -132,6 +148,32 @@ namespace VN.MiniGames
             onComplete = null;
             currentDefinition = null;
             callback?.Invoke(result);
+        }
+
+        private static bool IsContinueInputPressed()
+        {
+            if (Input.GetMouseButton(0)) return true;
+
+            for (int i = 0; i < KeyboardKeys.Length; i++)
+            {
+                if (Input.GetKey(KeyboardKeys[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsContinueInputDown()
+        {
+            if (Input.GetMouseButtonDown(0)) return true;
+
+            for (int i = 0; i < KeyboardKeys.Length; i++)
+            {
+                if (Input.GetKeyDown(KeyboardKeys[i]))
+                    return true;
+            }
+
+            return false;
         }
 
         private static List<KeyCode> CreateSequence(SequenceQTEMiniGameDefinition definition)

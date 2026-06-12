@@ -73,6 +73,7 @@ namespace VN.MiniGames
             if (image == null) return;
 
             image.sprite = sprite;
+            if (sprite != null) image.color = Color.white;
             image.enabled = sprite != null || visibleWhenMissing;
         }
     }

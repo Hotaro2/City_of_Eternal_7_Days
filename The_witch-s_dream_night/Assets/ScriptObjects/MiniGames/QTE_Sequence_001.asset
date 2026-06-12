@@ -42,6 +42,34 @@ MonoBehaviour:
   successFlag: qte_sequence_success_flag
   failFlag: qte_sequence_fail_flag
   promptText: Enter the sequence!
+  backgroundSprite: {fileID: 8757734573422836619, guid: 802ce3e9809a4b148990e7b9714dca9b, type: 3}
+  characterSprite: {fileID: 0}
+  keySlotSprite: {fileID: 0}
+  currentKeySlotSprite: {fileID: 0}
+  completeKeySlotSprite: {fileID: 0}
+  failedKeySlotSprite: {fileID: 0}
+  upKeySprite: {fileID: 482942740061986917, guid: 3b273e722a04163459c6692adaaf6044, type: 3}
+  downKeySprite: {fileID: -2659830875186329080, guid: fde1c9163d0b2b043be54eb989d19cef, type: 3}
+  leftKeySprite: {fileID: -6260733292063883617, guid: 3f0ce155fea3a6e49ae8a2ab499fb482, type: 3}
+  rightKeySprite: {fileID: -2793412848481695912, guid: 7582b31871472d24ca6cb1bbe43c1c0f, type: 3}
+  spaceKeySprite: {fileID: 7160658449185892920, guid: 110a7632c2f81954bb59b1ae869a86bb, type: 3}
+  currentUpKeySprite: {fileID: 6005615062155176447, guid: cbf59be82e4d237449fcb1a2fd1375b4, type: 3}
+  currentDownKeySprite: {fileID: -4467115583161455553, guid: 0fea69e34d1799f4a91c74dc1f5f8bcf, type: 3}
+  currentLeftKeySprite: {fileID: 1582578322507102598, guid: 3b43cd80beb80054ca2da94a95d66fa0, type: 3}
+  currentRightKeySprite: {fileID: 4982573167995075906, guid: d119e580f9a498742832f88a2c630ed4, type: 3}
+  currentSpaceKeySprite: {fileID: 8831374800246984992, guid: 8238c21bed7e44242ade21568f6d6d82, type: 3}
+  completeUpKeySprite: {fileID: 8741390029543295898, guid: 9c0d7dd54b4f4ce47bcbf26aa32062b5, type: 3}
+  completeDownKeySprite: {fileID: -2818718846803836282, guid: 3bf77cb11ce0efd4d87c080196ee2418, type: 3}
+  completeLeftKeySprite: {fileID: -8996906906619267187, guid: 55e7b55d3fb428945834475b7ef7918f, type: 3}
+  completeRightKeySprite: {fileID: 6910472200415426470, guid: ba3ee7811db7c434287a213dd00477cd, type: 3}
+  completeSpaceKeySprite: {fileID: 7319811689754750737, guid: ae4d076110a870a48a8d03c075a2cfbc, type: 3}
+  failedUpKeySprite: {fileID: 8965156366671694641, guid: 9363117bccd69944ea3ca4f6fde365d0, type: 3}
+  failedDownKeySprite: {fileID: 4571646321431300969, guid: afeab52eddc41be41847d5f55e66b39a, type: 3}
+  failedLeftKeySprite: {fileID: 7115082288156171571, guid: 353771f428e392b47832b8e0c57fc7be, type: 3}
+  failedRightKeySprite: {fileID: 4298352990655836250, guid: 13db20208fa2670418ecd4d46ba71731, type: 3}
+  failedSpaceKeySprite: {fileID: -2909399968150762411, guid: 42786b922631a994b8cba85c920b959b, type: 3}
+  successSprite: {fileID: -3928774446681677553, guid: a11668f6ce9b2c9408952b9d2d843b20, type: 3}
+  failSprite: {fileID: -439703681457732205, guid: 43ce227a2e3c8694a976d700f7e32af0, type: 3}
   correctSfx: {fileID: 0}
   wrongSfx: {fileID: 0}
   successSfx: {fileID: 0}

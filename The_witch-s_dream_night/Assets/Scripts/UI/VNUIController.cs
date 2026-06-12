@@ -197,6 +197,9 @@ namespace VN
             }
 
             float duration = SkipMode ? 0.02f : Mathf.Max(0f, seconds);
+            if (!fadeOut && !screenFadeImage.gameObject.activeSelf)
+                SetScreenFadeColor(color, 1f);
+
             float from = screenFadeImage.color.a;
             float to = fadeOut ? 1f : 0f;
 

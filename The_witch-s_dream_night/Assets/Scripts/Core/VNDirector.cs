@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using VN.MiniGames;
 
 namespace VN
@@ -21,6 +22,7 @@ namespace VN
         private bool playerNameConfirmed;
         private const string PlayerNameVariable = "player_name";
         private const string DefaultPlayerName = "지휘사";
+        private const string PlayerNamePrefsKey = "VNPlayerName";
 
         public string CurrentChapter { get; set; } = "Chapter 1";
         public float PlayTime { get; private set; }
@@ -49,6 +51,13 @@ namespace VN
 
             if (miniGameManager == null)
                 miniGameManager = FindFirstObjectByType<MiniGameManager>(FindObjectsInactive.Include);
+
+            string savedPlayerName = PlayerPrefs.GetString(PlayerNamePrefsKey, string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(savedPlayerName)
+                && engine.TrySetVariable(PlayerNameVariable, savedPlayerName))
+            {
+                playerNameConfirmed = true;
+            }
         }
 
         private void Update()
@@ -163,6 +172,8 @@ namespace VN
                     yield return ProcessNameInputTags(line.Tags);
                     yield return ui.WaitForAdvanceOrAuto(line.Text.Length);
                     yield return ProcessUITags(line.Tags, true);
+                    if (ProcessSceneTags(line.Tags))
+                        yield break;
                 }
 
                 var choices = engine.GetCurrentChoices();
@@ -277,9 +288,36 @@ namespace VN
                     yield return ui.RequestNameInput(defaultName, value => confirmedName = value);
                     engine.SetVariable(variableName, confirmedName);
                     if (string.Equals(variableName, PlayerNameVariable, StringComparison.OrdinalIgnoreCase))
+                    {
                         playerNameConfirmed = true;
+                        PlayerPrefs.SetString(PlayerNamePrefsKey, confirmedName);
+                        PlayerPrefs.Save();
+                    }
                 }
             }
+        }
+
+        private bool ProcessSceneTags(IReadOnlyList<string> tags)
+        {
+            if (tags == null) return false;
+
+            for (int i = 0; i < tags.Count; i++)
+            {
+                string tag = tags[i];
+                if (string.IsNullOrWhiteSpace(tag)) continue;
+
+                tag = tag.Trim();
+                if (tag.StartsWith("#")) tag = tag.Substring(1).Trim();
+
+                if (!tag.StartsWith("scene", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!TryReadStringTagValue(tag, out string sceneName)) continue;
+
+                isPlaying = false;
+                SceneManager.LoadScene(sceneName);
+                return true;
+            }
+
+            return false;
         }
 
         private IEnumerator ProcessMiniGameTags(IReadOnlyList<string> tags)

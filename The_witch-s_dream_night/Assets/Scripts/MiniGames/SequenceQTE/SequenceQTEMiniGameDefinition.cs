@@ -3,6 +3,14 @@ using UnityEngine;
 
 namespace VN.MiniGames
 {
+    public enum SequenceQTEKeyState
+    {
+        Pending,
+        Current,
+        Complete,
+        Failed
+    }
+
     [CreateAssetMenu(fileName = "SequenceQTE_MiniGame", menuName = "VN/MiniGames/Sequence QTE Definition")]
     public sealed class SequenceQTEMiniGameDefinition : MiniGameDefinition
     {
@@ -35,6 +43,21 @@ namespace VN.MiniGames
         [SerializeField] private Sprite leftKeySprite;
         [SerializeField] private Sprite rightKeySprite;
         [SerializeField] private Sprite spaceKeySprite;
+        [SerializeField] private Sprite currentUpKeySprite;
+        [SerializeField] private Sprite currentDownKeySprite;
+        [SerializeField] private Sprite currentLeftKeySprite;
+        [SerializeField] private Sprite currentRightKeySprite;
+        [SerializeField] private Sprite currentSpaceKeySprite;
+        [SerializeField] private Sprite completeUpKeySprite;
+        [SerializeField] private Sprite completeDownKeySprite;
+        [SerializeField] private Sprite completeLeftKeySprite;
+        [SerializeField] private Sprite completeRightKeySprite;
+        [SerializeField] private Sprite completeSpaceKeySprite;
+        [SerializeField] private Sprite failedUpKeySprite;
+        [SerializeField] private Sprite failedDownKeySprite;
+        [SerializeField] private Sprite failedLeftKeySprite;
+        [SerializeField] private Sprite failedRightKeySprite;
+        [SerializeField] private Sprite failedSpaceKeySprite;
         [SerializeField] private Sprite successSprite;
         [SerializeField] private Sprite failSprite;
         [SerializeField] private AudioClip correctSfx;
@@ -70,6 +93,22 @@ namespace VN.MiniGames
 
         public Sprite GetKeySprite(KeyCode key)
         {
+            return GetKeySprite(key, SequenceQTEKeyState.Pending);
+        }
+
+        public Sprite GetKeySprite(KeyCode key, SequenceQTEKeyState state)
+        {
+            return state switch
+            {
+                SequenceQTEKeyState.Current => GetCurrentKeySprite(key) ?? GetPendingKeySprite(key),
+                SequenceQTEKeyState.Complete => GetCompleteKeySprite(key) ?? GetPendingKeySprite(key),
+                SequenceQTEKeyState.Failed => GetFailedKeySprite(key) ?? GetPendingKeySprite(key),
+                _ => GetPendingKeySprite(key)
+            };
+        }
+
+        private Sprite GetPendingKeySprite(KeyCode key)
+        {
             return key switch
             {
                 KeyCode.UpArrow => upKeySprite,
@@ -77,6 +116,45 @@ namespace VN.MiniGames
                 KeyCode.LeftArrow => leftKeySprite,
                 KeyCode.RightArrow => rightKeySprite,
                 KeyCode.Space => spaceKeySprite,
+                _ => null
+            };
+        }
+
+        private Sprite GetCurrentKeySprite(KeyCode key)
+        {
+            return key switch
+            {
+                KeyCode.UpArrow => currentUpKeySprite,
+                KeyCode.DownArrow => currentDownKeySprite,
+                KeyCode.LeftArrow => currentLeftKeySprite,
+                KeyCode.RightArrow => currentRightKeySprite,
+                KeyCode.Space => currentSpaceKeySprite,
+                _ => null
+            };
+        }
+
+        private Sprite GetCompleteKeySprite(KeyCode key)
+        {
+            return key switch
+            {
+                KeyCode.UpArrow => completeUpKeySprite,
+                KeyCode.DownArrow => completeDownKeySprite,
+                KeyCode.LeftArrow => completeLeftKeySprite,
+                KeyCode.RightArrow => completeRightKeySprite,
+                KeyCode.Space => completeSpaceKeySprite,
+                _ => null
+            };
+        }
+
+        private Sprite GetFailedKeySprite(KeyCode key)
+        {
+            return key switch
+            {
+                KeyCode.UpArrow => failedUpKeySprite,
+                KeyCode.DownArrow => failedDownKeySprite,
+                KeyCode.LeftArrow => failedLeftKeySprite,
+                KeyCode.RightArrow => failedRightKeySprite,
+                KeyCode.Space => failedSpaceKeySprite,
                 _ => null
             };
         }

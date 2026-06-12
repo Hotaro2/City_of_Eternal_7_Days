@@ -13,14 +13,48 @@ MonoBehaviour:
   m_Name: VNAssetDatabase
   m_EditorClassIdentifier: Assembly-CSharp::VN.VNAssetDatabase
   backgrounds:
-  - key: Forest
-    sprite: {fileID: 1208040086343421634, guid: e26004d8faa35a44ea1024a72c492590, type: 3}
   - key: "\uC911\uC559\uCCAD"
     sprite: {fileID: 7379051995743214545, guid: 854bdf8107dc347418a8fe961ef139e2, type: 3}
+  - key: "\uBA78\uB9DD\uC911 \uB3C4\uC2DC"
+    sprite: {fileID: 8757734573422836619, guid: 802ce3e9809a4b148990e7b9714dca9b, type: 3}
+  - key: "\uAE68\uC5B4\uB0A8 \uC77C\uB7EC\uC2A4\uD2B8"
+    sprite: {fileID: -3395069453005835974, guid: 00a8547f4cf6ed84aa11128251b2c6e2, type: 3}
+  - key: "\uC544\uCE68\uC0C1 \uC77C\uB7EC\uC2A4\uD2B8"
+    sprite: {fileID: -4037553593282590173, guid: f9b12bd045d43a645b1914fbea115971, type: 3}
+  - key: "\uC9C0\uD718\uAD00\uBC29"
+    sprite: {fileID: -904357924442533927, guid: e6c24935d94b26c4e90d35c59b1ecfa9, type: 3}
   characters:
-  - characterName: Watari
-    defaultSprite: {fileID: 3806927655032775069, guid: 861e3c7c0179da442818bf07067e0c2a, type: 3}
+  - characterName: "\uC640\uD0C0\uB9AC"
+    defaultSprite: {fileID: 1028215757988938872, guid: ae1aa27553453394e9d847bcf318cce2, type: 3}
     expressions: []
+  - characterName: "\uC548"
+    defaultSprite: {fileID: -8025048271896773608, guid: 2552a080e6ec62a4881c052f9c66d04a, type: 3}
+    expressions: []
+  - characterName: "\uBCA0\uB77C"
+    defaultSprite: {fileID: -4138380708521954472, guid: 3a60052697c696247b7c0a71fb20296f, type: 3}
+    expressions:
+    - expressionName: "\uBCA0\uB77C\uC815\uBA74"
+      sprite: {fileID: 2377056446738459782, guid: 16e2249efeb12cb46856a33aed7255d9, type: 3}
+  - characterName: "\uC559\uD22C\uC544\uB124\uD2B8"
+    defaultSprite: {fileID: 8163265760221292477, guid: 334009a327a10004889cbae8ac3247f5, type: 3}
+    expressions:
+    - expressionName: "\uC815\uBA74"
+      sprite: {fileID: 2377056446738459782, guid: 16e2249efeb12cb46856a33aed7255d9, type: 3}
+  - characterName: "\uC548\uD654"
+    defaultSprite: {fileID: 4081983693000733090, guid: 2d3e0a3d3dddd8e41a20eec9edfdbbea, type: 3}
+    expressions:
+    - expressionName: "\uC815\uBA74"
+      sprite: {fileID: 2377056446738459782, guid: 16e2249efeb12cb46856a33aed7255d9, type: 3}
+  - characterName: "\uD788\uB85C"
+    defaultSprite: {fileID: -8234585212138233891, guid: 19c74c36b86b1bb448b6f5a8c0aa65cd, type: 3}
+    expressions:
+    - expressionName: "\uC815\uBA74"
+      sprite: {fileID: 2377056446738459782, guid: 16e2249efeb12cb46856a33aed7255d9, type: 3}
+  - characterName: "\uB85C\uB098\uD06C"
+    defaultSprite: {fileID: -8585344535798959171, guid: cc9d97447a811d849bb2ea98f01e2ccb, type: 3}
+    expressions:
+    - expressionName: "\uC815\uBA74"
+      sprite: {fileID: 2377056446738459782, guid: 16e2249efeb12cb46856a33aed7255d9, type: 3}
   bgm:
   - key: 
     clip: {fileID: 0}

@@ -4,11 +4,14 @@ VAR player_name = "지휘사"
 -> start
 
 === start ===
+#hideAll
 -> prologue
 
 === prologue ===
+#hideAll
 #bg Black
 #mode prologue
+#hideAll
 #textFade 0.7
 #speaker ???
 어서 와. 침입자 씨.
@@ -26,6 +29,7 @@ VAR player_name = "지휘사"
     -> prologue_dejavu
 
 === prologue_dejavu ===
+#hideAll
 #clear
 #speaker ???
 당신도 「데자뷰」라는 것을 들어 봤겠지.
@@ -40,6 +44,7 @@ VAR player_name = "지휘사"
     -> prologue_memory
 
 === prologue_memory ===
+#hideAll
 #clear
 #speaker ???
 어쩌면 당신은 이미 이곳에 와봤을 수도 있어.
@@ -57,6 +62,7 @@ VAR player_name = "지휘사"
     -> prologue_end
 
 === prologue_end ===
+#hideAll
 #clear
 #speaker ???
 그런데 말이야. 잊혀졌다고 하는 진짜 기억이 혹시 착각은 아닐까?
@@ -73,8 +79,9 @@ VAR player_name = "지휘사"
 -> collapse_preview
 
 === collapse_preview ===
+#hideAll
 #mode normal
-#bg RuinedCity fade
+#bg 멸망중 도시 fade
 #fadeIn 0.8
 #bgm crisis
 #speaker Scenario
@@ -82,6 +89,7 @@ VAR player_name = "지휘사"
 하늘에는 거대한 흑문이 벌어져 있었고, 도시는 검은 안개에 잠겨 있었다.
 
 #speaker 베라
+#ch 베라 default left fade
 앙투아네트, 흑문이 계속해서 커지고 있어.
 이렇게 가다간 얼마 버티지 못해...
 
@@ -89,10 +97,12 @@ VAR player_name = "지휘사"
 지휘사와 안이 정말 흑문을 파괴할 수 있을지...
 
 #speaker 앙투아네트
+#ch 앙투아네트 default right fade
 지금은 그들을 믿을 수밖에 없어요.
 늦지 않았으면 좋겠는데...
 
 #speaker 안
+#ch 안 default center fade
 윽... 상처는 얕으니 걱정 마세요.
 몬스터가 점점 늘어나고 있어요. 서두르지 않으면...
 
@@ -105,6 +115,7 @@ VAR player_name = "지휘사"
 카앙! 카앙! 은빛 검격이 어둠을 가른다.
 
 #speaker 안
+#ch 안 default center fade
 왜 그래요? 긴장했어요?
 설마 또 어떻게 싸워야 하는지 잊어버린 건 아니겠죠...
 
@@ -122,6 +133,7 @@ VAR player_name = "지휘사"
 변이체 출현.
 
 #speaker 안
+#ch 안 default center fade
 큰 녀석이 왔네요...
 제 필살기, 아직 기억하죠?
 시간역행.
@@ -138,6 +150,7 @@ VAR player_name = "지휘사"
 변이체 격파.
 
 #speaker 안
+#ch 안 default center fade
 다행이다! 생명결정이 떨어졌어요!
 생명결정을 먹으면 생명력을 일정량 회복할 수 있어요.
 
@@ -146,6 +159,7 @@ VAR player_name = "지휘사"
 생명결정 획득.
 
 #speaker 안
+#ch 안 default center fade
 저도 어느 정도 회복이 다 됐으니...
 그럼 이제... 마지막 전투에 들어가죠!
 
@@ -156,6 +170,7 @@ VAR player_name = "지휘사"
 #clear
 
 #mode prologue
+#hideAll
 #prologueTheme systemWhite
 #fadeOut 0 white
 #fadeIn 0.8 white
@@ -181,6 +196,7 @@ VAR player_name = "지휘사"
 -> new_seven_days
 
 === new_seven_days ===
+#hideAll
 #fadeIn 0.8 black
 #clear
 ...이봐... 들려...?
@@ -191,9 +207,11 @@ VAR player_name = "지휘사"
 <color=red>계속 깨어나지 않는다면... 이 세계는...</color>
 #mode normal
 #textFade 0.7
-#bg ControlRoom
+#bg 중앙청
 #fadeIn 0.8 black
 
+#hideAll
+#bg 깨어남 일러스트 fade
 #speaker 나
 우와--!
 
@@ -233,7 +251,10 @@ VAR player_name = "지휘사"
 {player_name}.
 이상한 이름이네요.
 
+#hideAll
+#bg 중앙청 fade
 #speaker 안
+#ch 안 default left fade
 앗, 미안해요.
 방금은 제가 말이 좀 지나쳤네요.
 이제 그만 뚝! 그만 울어요!
@@ -243,6 +264,7 @@ VAR player_name = "지휘사"
 도대체 무슨 일이...!?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default right fade
 제가 간단히 설명해 줄게요.
 
 #speaker 앙투아네트
@@ -253,6 +275,7 @@ VAR player_name = "지휘사"
 지휘사...?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default right fade
 혼란스러워하는 것도 무리는 아니죠.
 처음 만나자마자 안한테 강제로 끌려가서 모의 전투에 투입됐으니.
 
@@ -264,6 +287,7 @@ VAR player_name = "지휘사"
 ............
 
 #speaker 앙투아네트
+#ch 앙투아네트 default right fade
 네? 기억상실이요?!
 이름 말고는 아무것도 기억이 안 난다구요?
 
@@ -277,6 +301,7 @@ VAR player_name = "지휘사"
 당신은 좀 특별하네요!
 
 #speaker 안
+#ch 안 default left fade
 제가 볼 때는 그렇게 자랑할 만한 일은 아닌 것 같은데요...
 나중엔 보는 것마다 잊어버리면 어떡해요.
 
@@ -286,11 +311,13 @@ VAR player_name = "지휘사"
 저는 여기서 뭘 해야 하죠?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default right fade
 보아하니 처음부터 다시 설명해 드려야겠네요.
 그럼 질의응답 형식으로 해 볼까요.
 -> briefing_questions
 
 === briefing_questions ===
+#hideAll
 #speaker Scenario
 (무엇을 물어볼까?)
 
@@ -307,7 +334,9 @@ VAR player_name = "지휘사"
     -> briefing_end
 
 === q_city ===
+#hideAll
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 여기는 이계의 흑문과 현실세계가 공존하는 「접경도시」.
 
 #speaker 앙투아네트
@@ -321,7 +350,9 @@ VAR player_name = "지휘사"
 -> briefing_questions
 
 === q_center ===
+#hideAll
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 신기사는 특수한 무기를 다루는 전투 전문가이고, 지휘사는 신기사에게 특수한 전투 지원을 하는 능력자예요.
 
 #speaker 앙투아네트
@@ -333,7 +364,9 @@ VAR player_name = "지휘사"
 -> briefing_questions
 
 === q_terminal ===
+#hideAll
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 「전술 단말기」는 전투, 강화, 신기사 소집 등 특수한 기능을 수행하는 기기예요.
 
 #speaker 앙투아네트
@@ -345,7 +378,9 @@ VAR player_name = "지휘사"
 -> briefing_questions
 
 === briefing_end ===
+#hideAll
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 그럼... 단도직입적으로 말할게요.
 당신은 우리의 구세주예요.
 
@@ -357,10 +392,13 @@ VAR player_name = "지휘사"
 [효과음] 벨소리.
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 ...죄송해요. 손님이 오셔서요.
 안, 이어서 좀 부탁할게요.
 
+#hide 앙투아네트 fade
 #speaker 안
+#ch 안 default center fade
 예... 알았어요.
 
 #speaker 안
@@ -369,11 +407,13 @@ VAR player_name = "지휘사"
 -> city_tour
 
 === city_tour ===
+#hideAll
 #bg City fade
 #speaker Scenario
 앙투아네트는 전화를 받으러 나갔고, 나는 안을 따라 방에서 나왔다.
 
 #speaker 안
+#ch 안 default center fade
 도시에 검은 안개가 자욱한 곳은 흑문에 침식된 구역이에요.
 
 #speaker 안
@@ -390,6 +430,7 @@ VAR player_name = "지휘사"
 어랏, 네 이름이 저장되어 있어.
 
 #speaker 안
+#ch 안 default center fade
 그게 뭐 어때서요.
 저도 신기사라구요.
 물론 앙투아네트와 비교할 정도는 아니지만...
@@ -398,6 +439,7 @@ VAR player_name = "지휘사"
 그러니까... 그 말은 즉, 내가 필요할 때면 언제든지 너를 불러도 된다는 소리야?
 
 #speaker 안
+#ch 안 default center fade
 아...!
 저, 저는 괜찮아요.
 부르면 언제든지 달려오는 게 메이드의 임무니까요.
@@ -420,6 +462,7 @@ VAR player_name = "지휘사"
 음... 중앙청을 설립한 사람은 분명 대단한 사람이겠지.
 
 #speaker 안
+#ch 안 default center fade
 중앙청의 설립자는 히로라고 하는 분인데, 당신이 오기 전에는 우리의 유일한 지휘사였어요.
 
 #speaker 안
@@ -434,6 +477,7 @@ VAR player_name = "지휘사"
 귀엽네...
 
 #speaker 안
+#ch 안 default center fade
 응?
 왜 그렇게 웃는 거예요.
 
@@ -441,6 +485,7 @@ VAR player_name = "지휘사"
 앗, 미안!
 
 #speaker 안
+#ch 안 default center fade
 저랑 주위나 좀 둘러보죠.
 어서 따라와요.
 
@@ -453,6 +498,7 @@ VAR player_name = "지휘사"
 #shake 0.25 20
 
 #speaker 안
+#ch 안 default center fade
 역시 그랬어...
 흑문이에요!
 
@@ -467,111 +513,14 @@ VAR player_name = "지휘사"
 
 #speaker 안
 일단 전술 단말기로 중앙청의 다른 신기사들에게 연락해 봐요.
-
-#speaker Scenario
-[효과음] 지지직...
-
-#speaker 안
-이런, 전술 단말기에 신호장애가 생겨서 다른 사람이랑 연락을 할 수가 없어요.
-
-#speaker 안
-지금 중요한 건, 우리를 도와줄 신기사를 찾는 것.
-...일단 그곳으로 갈 수밖에 없겠네요.
-백야관.
-
-#speaker 안
-가까운 숲속에 있어요.
-어서 가요!
--> white_night_house
-
-=== white_night_house ===
-#bg WhiteNightHouse fade
-#speaker ???
-어머, 드디어 손님이 오셨군요.
-
-#speaker ???
-어서와요.
-저는 백야관의 주인, 카스미예요.
-여기서 오랫동안 조용히 기다리고 있었어요.
-
-#speaker 카스미
-이곳은 기억을 저장하는 곳.
-이 세상의 모든 기억을 보관하고 있죠.
-
-#speaker 카스미
-당신, 잊어버린 것이라도 있나요?
-
-#speaker 지휘사
-내... 내 이름 말고는 아무것도 기억이 나지 않아요.
-
-#speaker 카스미
-예상대로군요.
-망각이라는 건 세상의 진리에서 중요한 부분을 차지하죠.
-
-#speaker 카스미
-인간으로서 중요한 것을 망각하는 건 당연한 거예요.
-다시 떠올려 내면 된답니다.
-
-#speaker 카스미
-저에게 충분한 대가를 치른다면, 당신의 기억을 되찾아줄 수도 있어요.
-
-+ [무슨 대가죠?]
-    -> kasumi_price
-
-+ [당신은 어떻게 그런 능력을 가지고 있죠?]
-    -> kasumi_power
-
-=== kasumi_price ===
-#speaker 카스미
-그런 능력을 지닌 건 제가 아닌, 당신이 지불한 대가랍니다.
-
-#speaker 카스미
-필요한 건 오팔이라는 보석이에요.
-이 보석은 인간 사회에서 매우 귀중하고, 매우 아름다우면서도 막대한 힘을 가지고 있죠...
--> kasumi_memory
-
-=== kasumi_power ===
-#speaker 카스미
-후후. 너무 성급하게 묻는군요.
-하지만 당신의 귀여움을 봐서, 이번에는 무료로 열어볼 수 있게 해 드릴게요.
--> kasumi_memory
-
-=== kasumi_memory ===
-#speaker Scenario
-[화면 연출] 어둠 속에서 낯선 얼굴의 실루엣이 떠오른다.
-[효과음] 유리 조각이 서로 맞부딪히는 듯한 소리.
-
-#speaker 지휘사
-이건... 뭐죠?
-
-#speaker 카스미
-당신의 기억이랍니다.
-잊혀진 기억의 단편.
-
-#speaker 지휘사
-하지만 전 이 사람이 누군지 몰라요!
-
-#speaker 카스미
-왜 그렇게 믿는 거죠?
-사람은 모두 기억의 일부를 잊어버리는걸요.
-
-#speaker 카스미
-많은 것을 잊어버리는 사람이 있으면, 적게만 잊어버리는 사람도 있죠.
-누군가는 중요치 않은 사소한 것만 잊는가 하면...
-일생일대의 중요한 것이 걸린 소중한 것을 잃어버리는 사람도 있답니다.
-
-#speaker 카스미
-제가 봤을 때엔, 당신은... 후자인 것 같네요?
-
-#speaker 카스미
-하지만 당신이 의심하는 것도 정상이죠.
-나중에 저를 믿고 기억들을 다시 되찾고 싶으시거든, 그때 다시 저를 찾아오세요.
 -> first_battle_vn
 
 === first_battle_vn ===
+#hideAll
 #bg DarkZone fade
 #bgm battle
 #speaker 안
+#ch 안 default center fade
 지휘사 님, 기억하세요?
 지휘사는 신기사의 힘을 강화하는 능력을 갖고 있어요.
 
@@ -583,6 +532,7 @@ VAR player_name = "지휘사"
 강화? 교체?
 
 #speaker 안
+#ch 안 default center fade
 정말.
 그새 앙투아네트가 가르쳐 준 거 전부 잊은 거죠...
 
@@ -595,6 +545,7 @@ VAR player_name = "지휘사"
 [전투 연출] 안의 검 끝에 빛이 모이고, 지휘사의 단말기 화면에 여러 개의 선이 연결된다.
 
 #speaker 안
+#ch 안 default center fade
 여기까지 말씀드렸는데, 얼마나 기억하실지 모르겠네요.
 일단은 실전에서 응용해 보도록 하죠!
 
@@ -609,12 +560,14 @@ VAR player_name = "지휘사"
     -> battle_wave_1
 
 === battle_wave_1 ===
+#hideAll
 #speaker Scenario
 [전투 연출] 안이 앞으로 뛰쳐나가며 몬스터 무리를 베어낸다.
 #shake 0.2 18
 1 웨이브 격파.
 
 #speaker 안
+#ch 안 default center fade
 보세요, 저걸로 에너지를 보충할 수 있어요.
 몬스터를 쓰러트리고 나온 프리즘으로 신기사의 힘을 다시 끌어올릴 수 있죠.
 
@@ -644,10 +597,12 @@ BOSS 쿠루시 격파.
     -> dejavu_dodge
 
 === dejavu_dodge ===
+#hideAll
 #speaker Scenario
 거의 무의식적으로 옆으로 뛰어, 치명적인 일격을 피했다.
 
 #speaker 안
+#ch 안 default center fade
 어림없다!!
 
 #speaker Scenario
@@ -655,6 +610,7 @@ BOSS 쿠루시 격파.
 은빛이 번쩍이더니, 그 잔해는 안의 은검에 의해 땅에 꽂혔다.
 
 #speaker 안
+#ch 안 default center fade
 흥!
 감히 내 앞에서 기습을 하려고 하다니.
 
@@ -670,6 +626,7 @@ BOSS 쿠루시 격파.
 (그 몬스터가 튀어 오를 때, 마치 난 이미 녀석의 공격 루트를 알고 있었던 것 같았어...)
 
 #speaker 안
+#ch 안 default center fade
 그래도 역시 지휘사가 전투에 나가는 건 많이 위험해요.
 다음부턴 꼭 조심하세요.
 
@@ -678,6 +635,7 @@ BOSS 쿠루시 격파.
 (이 데자뷰만 있다면... 어쩌면 나도 전투에 도움이 될지도.)
 
 #speaker 안
+#ch 안 default center fade
 정말이지 입만 살아서.
 
 #speaker Scenario
@@ -693,6 +651,7 @@ BOSS 쿠루시 격파.
 (엥... 이번 공격은... 예상이 전혀 안 됐어...)
 
 #speaker 안
+#ch 안 default center fade
 방금은 운이 좋았을 뿐이에요.
 매번 공격을 피할 수 있을 거란 생각은 하지 마세요.
 
@@ -702,6 +661,7 @@ BOSS 쿠루시 격파.
 -> black_core
 
 === black_core ===
+#hideAll
 #bg ControlRoom fade
 #bgm mystery
 #speaker Scenario
@@ -739,6 +699,7 @@ BOSS 쿠루시 격파.
 (당신은 또 누구야.)
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 안, 지휘사, 괜찮아요?
 레이첼 씨... 조심해서 걸으세요.
 
@@ -752,6 +713,7 @@ BOSS 쿠루시 격파.
 이 핵은 이미 정화된 거야.
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 정화요?
 
 #speaker 레이첼
@@ -768,6 +730,7 @@ BOSS 쿠루시 격파.
 100% 공짜! 100% 신뢰 보장!
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 첫 전투에서 흑문을 제거하고, 거기에 중앙청의 핵도 해결하시다니...
 역시 지휘사 님.
 정말 대단해요.
@@ -776,6 +739,7 @@ BOSS 쿠루시 격파.
 난... 그렇게 대단하지 않은걸요.
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 우리가 지금 하는 일은 어쩌면 지금 당장 성과를 볼 수 없을지도 몰라요.
 하지만 티끌 모아 태산이라고 하잖아요.
 차근차근 이 세상의 평화를 되찾아 올 거예요.
@@ -795,6 +759,7 @@ BOSS 쿠루시 격파.
     -> join_center_alt
 
 === join_center_alt ===
+#hideAll
 #speaker 레이첼
 싫으면 고고학 연구소에서 일해보는 건 어때.
 지휘사의 몸을 지금까지 엄청 기다려 왔걸랑!
@@ -806,12 +771,15 @@ BOSS 쿠루시 격파.
 -> join_center
 
 === join_center ===
+#hideAll
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 고마워요.
 그럼 이제 지휘사로서 필수로 알아야 하는 지식들을 가르쳐 드릴게요.
 따라오세요.
 
 #speaker 안
+#ch 안 default center fade
 아아, 시작했네요.
 앙투아네트의 연례 지옥 훈련.
 
@@ -819,6 +787,7 @@ BOSS 쿠루시 격파.
 엥?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 후후, 바보 같은 소리 말아요.
 중앙청을 통솔해서 이계와 싸우는 지휘사가 이 정도도 못 버텨서 되겠어요?
 
@@ -826,6 +795,7 @@ BOSS 쿠루시 격파.
 자, 잠깐...
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 자, 그럼 갈까요.
 
 #speaker Scenario
@@ -833,8 +803,10 @@ BOSS 쿠루시 격파.
 -> management_intro
 
 === management_intro ===
+#hideAll
 #bg CityDay fade
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 그럼...
 중앙청의 흑핵을 되찾은 걸 다시 한 번 축하해요.
 
@@ -851,6 +823,7 @@ BOSS 쿠루시 격파.
 이렇게 중요한 일은 저에게 맡겨도 되는 거예요?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 물론 잘 못 하겠죠.
 그러니까 공부해야죠.
 
@@ -858,6 +831,7 @@ BOSS 쿠루시 격파.
 아...
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 이론서는 나중에 당신의 방으로 보내 둘게요.
 지금은 먼저 실전으로 들어가 보죠.
 
@@ -879,6 +853,7 @@ BOSS 쿠루시 격파.
 본부가 적에게 당한 건가?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 아뇨, 별일 없어요.
 그저 외관이 조금 망가져서 수리 중이었어요.
 
@@ -895,6 +870,7 @@ BOSS 쿠루시 격파.
 자네와 같은 지휘사지.
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 말은 참 잘하시네요.
 당신이 툭하면 밖으로 나가서 농땡이를 피우니까 그렇죠?
 
@@ -905,6 +881,7 @@ BOSS 쿠루시 격파.
 앞으로 이 아저씨도 잘 부탁하네.
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 신인 지휘사 님이랑은 멀리 떨어져 주시겠나요.
 당신의 안 좋은 습관들이 옮을까 걱정되네요.
 
@@ -922,6 +899,7 @@ BOSS 쿠루시 격파.
 ...사탕?
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 죄송해요.
 만난 지 시간이 좀 지났는데, 아직 선물도 못 줘서...
 다음에 기회가 된다면 꼭 드리도록 할게요.
@@ -939,6 +917,7 @@ BOSS 쿠루시 격파.
 -> countdown_scene
 
 === countdown_scene ===
+#hideAll
 #bg Dormitory fade
 #bgm quiet
 #speaker Scenario
@@ -949,6 +928,7 @@ BOSS 쿠루시 격파.
 방금 그건 뭐였지...
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 응?
 왜 그래요?
 
@@ -958,6 +938,7 @@ BOSS 쿠루시 격파.
 저기에, 카운트다운이 시작됐어요.
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 음...
 저는 안 보이네요.
 아무래도 지휘사만의 특별한 능력인 것 같네요.
@@ -968,6 +949,7 @@ BOSS 쿠루시 격파.
 (경고의 의미인가... 아니면 다른 무언간가...)
 
 #speaker 앙투아네트
+#ch 앙투아네트 default center fade
 마음이 급해도 소용없죠.
 다음에 히로 씨와 한 번 상의해 보세요.
 
@@ -1026,6 +1008,8 @@ BOSS 쿠루시 격파.
 우선 도시의 흑문부터 해결하자!
 
 #speaker System
+#afterFadeOut 0.5 black
+#scene LobbyScene
 대학 캠퍼스 해방 가능.
 챕터 1 종료.
 -> END

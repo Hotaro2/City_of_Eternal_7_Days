@@ -84,7 +84,12 @@ namespace VN.MiniGames
             PlaySfx(success ? currentDefinition.SuccessSfx : currentDefinition.FailSfx);
             view?.ShowResult(success, result.rank);
 
-            yield return new WaitForSecondsRealtime(Mathf.Max(0f, resultHoldSeconds));
+            yield return new WaitForSecondsRealtime(Mathf.Max(0.45f, resultHoldSeconds));
+            while (Input.anyKey || Input.GetMouseButton(0))
+                yield return null;
+            yield return null;
+            while (!Input.anyKeyDown && !Input.GetMouseButtonDown(0))
+                yield return null;
 
             routine = null;
             view?.SetVisible(false);

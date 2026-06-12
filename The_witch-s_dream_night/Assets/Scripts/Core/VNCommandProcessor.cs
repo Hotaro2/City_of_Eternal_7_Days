@@ -26,17 +26,27 @@ namespace VN
                 if (string.IsNullOrWhiteSpace(tag)) continue;
 
                 var parts = tag.Split(new[] { ' ', ':' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2) continue;
+                if (parts.Length == 0) continue;
 
                 string cmd = parts[0].ToLower();
                 if (cmd.StartsWith("#")) cmd = cmd.Substring(1);
 
                 switch (cmd)
                 {
+                    case "hideall": // #hideAll
+                        presenter.ClearAllCharacters();
+                        break;
+
                     case "bg": // #bg [키] [트랜지션]
                         {
-                            string bgKey = parts[1];
-                            string trans = (parts.Length > 2) ? parts[2].ToLower() : null;
+                            if (parts.Length < 2) break;
+
+                            bool hasTransition = parts[^1].Equals("fade", StringComparison.OrdinalIgnoreCase);
+                            int keyPartCount = parts.Length - 1 - (hasTransition ? 1 : 0);
+                            if (keyPartCount <= 0) break;
+
+                            string bgKey = string.Join(" ", parts, 1, keyPartCount);
+                            string trans = hasTransition ? "fade" : null;
                             presenter.SetBackground(bgKey, trans);
                         }
                         break;

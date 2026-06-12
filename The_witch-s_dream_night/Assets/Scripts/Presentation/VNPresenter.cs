@@ -16,6 +16,11 @@ namespace VN
         [SerializeField] private GameObject characterPrefab;
         [SerializeField] private RectTransform masterUIRoot;
 
+        [Header("Character Layout")]
+        [SerializeField, Range(0.1f, 1f)] private float characterHeightRatio = 0.9f;
+        [SerializeField] private float characterBottomOffset = 0f;
+        [SerializeField, Range(0.1f, 0.45f)] private float characterSidePositionRatio = 0.23f;
+
         [Header("Audio Components")]
         [SerializeField] private AudioSource bgmSource;
         [SerializeField] private AudioSource sfxSource;
@@ -150,6 +155,9 @@ namespace VN
             var sprite = assetDB.GetCharacter(charName, expression);
             if (sprite == null) return;
 
+            string targetPosition = NormalizePosition(position);
+            PrepareCharacterSlot(key, targetPosition);
+
             GameObject charObj;
             bool isNew = false;
 
@@ -164,7 +172,7 @@ namespace VN
                 {
                     name = charName,
                     expression = expression,
-                    position = position
+                    position = targetPosition
                 }, charObj);
                 isNew = true;
             }
@@ -175,14 +183,15 @@ namespace VN
 
             var (state, _) = activeCharacters[key];
             state.expression = expression;
-            if (position != null) state.position = position;
+            state.position = targetPosition;
             activeCharacters[key] = (state, charObj);
 
             var image = charObj.GetComponent<Image>();
             if (image != null)
             {
                 image.sprite = sprite;
-                image.SetNativeSize();
+                image.preserveAspect = true;
+                ApplyCharacterSize(image.rectTransform, sprite);
             }
 
             ApplyPosition(charObj.transform as RectTransform, state.position);
@@ -191,8 +200,77 @@ namespace VN
                 StartCoroutine(FadeCharacterRoutine(charObj, true));
         }
 
+        private void PrepareCharacterSlot(string characterKey, string targetPosition)
+        {
+            var keysToRemove = activeCharacters
+                .Where(pair =>
+                {
+                    if (pair.Key == characterKey) return false;
+
+                    string occupiedPosition = NormalizePosition(pair.Value.state.position);
+                    return targetPosition == "center"
+                        || occupiedPosition == "center"
+                        || occupiedPosition == targetPosition;
+                })
+                .Select(pair => pair.Key)
+                .ToList();
+
+            foreach (string key in keysToRemove)
+                RemoveCharacterImmediately(key);
+        }
+
+        private void RemoveCharacterImmediately(string key)
+        {
+            if (!activeCharacters.TryGetValue(key, out var entry)) return;
+
+            if (entry.obj != null)
+                Destroy(entry.obj);
+
+            activeCharacters.Remove(key);
+        }
+
+        private static string NormalizePosition(string position)
+        {
+            switch (position?.ToLower())
+            {
+                case "left":
+                case "right":
+                    return position.ToLower();
+                default:
+                    return "center";
+            }
+        }
+
+        private void ApplyCharacterSize(RectTransform rect, Sprite sprite)
+        {
+            if (rect == null || sprite == null) return;
+
+            RectTransform canvasRect = GetCharacterCanvasRect();
+            float availableHeight = canvasRect != null && canvasRect.rect.height > 0f
+                ? canvasRect.rect.height
+                : Screen.height;
+
+            float targetHeight = Mathf.Max(1f, availableHeight * characterHeightRatio);
+            float aspectRatio = sprite.rect.width / Mathf.Max(1f, sprite.rect.height);
+
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.localScale = Vector3.one;
+            rect.sizeDelta = new Vector2(targetHeight * aspectRatio, targetHeight);
+        }
+
+        private RectTransform GetCharacterCanvasRect()
+        {
+            return characterRoot != null
+                ? characterRoot.GetComponentInParent<Canvas>()?.GetComponent<RectTransform>()
+                : null;
+        }
+
         private System.Collections.IEnumerator FadeCharacterRoutine(GameObject obj, bool fadeIn, System.Action onComplete = null)
         {
+            if (obj == null) yield break;
+
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             if (canvasGroup == null) canvasGroup = obj.AddComponent<CanvasGroup>();
 
@@ -201,12 +279,16 @@ namespace VN
 
             while (elapsed < duration)
             {
+                if (canvasGroup == null) yield break;
+
                 elapsed += Time.unscaledDeltaTime;
                 canvasGroup.alpha = fadeIn
                     ? Mathf.Clamp01(elapsed / duration)
                     : Mathf.Clamp01(1f - (elapsed / duration));
                 yield return null;
             }
+
+            if (canvasGroup == null) yield break;
 
             canvasGroup.alpha = fadeIn ? 1f : 0f;
             onComplete?.Invoke();
@@ -216,14 +298,22 @@ namespace VN
         {
             if (rect == null) return;
 
+            RectTransform canvasRect = GetCharacterCanvasRect();
+            float canvasWidth = canvasRect != null && canvasRect.rect.width > 0f
+                ? canvasRect.rect.width
+                : Screen.width;
+            float canvasHeight = canvasRect != null && canvasRect.rect.height > 0f
+                ? canvasRect.rect.height
+                : Screen.height;
+
             float x = 0f;
             switch (position?.ToLower())
             {
                 case "left":
-                    x = -600f;
+                    x = -canvasWidth * characterSidePositionRatio;
                     break;
                 case "right":
-                    x = 600f;
+                    x = canvasWidth * characterSidePositionRatio;
                     break;
                 case "center":
                 default:
@@ -231,7 +321,8 @@ namespace VN
                     break;
             }
 
-            rect.anchoredPosition = new Vector2(x, rect.anchoredPosition.y);
+            float y = (-canvasHeight * 0.5f) + (rect.sizeDelta.y * 0.5f) + characterBottomOffset;
+            rect.anchoredPosition = new Vector2(x, y);
         }
 
         public void HideCharacter(string charName, string transition = null)
@@ -244,13 +335,17 @@ namespace VN
                 StartCoroutine(FadeCharacterRoutine(entry.obj, false, () =>
                 {
                     if (entry.obj != null) Destroy(entry.obj);
-                    activeCharacters.Remove(key);
+
+                    if (activeCharacters.TryGetValue(key, out var currentEntry)
+                        && currentEntry.obj == entry.obj)
+                    {
+                        activeCharacters.Remove(key);
+                    }
                 }));
             }
             else
             {
-                Destroy(entry.obj);
-                activeCharacters.Remove(key);
+                RemoveCharacterImmediately(key);
             }
         }
 

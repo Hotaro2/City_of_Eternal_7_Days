@@ -61,6 +61,7 @@ namespace VN.MiniGames
             if (roundText != null) roundText.text = $"Round {roundIndex + 1} / {roundCount}";
             if (mistakeText != null) mistakeText.text = $"Mistakes {mistakes} / {mistakeLimit}";
 
+            UpdateKeyLayout(sequence);
             int visibleCount = Mathf.Max(keyTexts.Count, keySlotImages.Count, keyIconImages.Count);
             for (int i = 0; i < visibleCount; i++)
             {
@@ -69,8 +70,17 @@ namespace VN.MiniGames
                 if (!hasKey) continue;
 
                 KeyCode key = sequence[i];
-                ApplyKeySlot(i, GetKeySlotSprite(i, currentIndex), GetKeyColor(i, currentIndex));
-                ApplyKeyIcon(i, key, currentDefinition != null ? currentDefinition.GetKeySprite(key) : null, GetKeyColor(i, currentIndex));
+                SequenceQTEKeyState state = GetKeyState(i, currentIndex);
+                Sprite combinedSprite = currentDefinition != null ? currentDefinition.GetKeySprite(key, state) : null;
+                if (combinedSprite != null)
+                {
+                    ApplyCombinedKeySprite(i, combinedSprite);
+                }
+                else
+                {
+                    ApplyKeySlot(i, GetKeySlotSprite(i, currentIndex), GetKeyColor(i, currentIndex));
+                    ApplyKeyIcon(i, key, null, GetKeyColor(i, currentIndex));
+                }
             }
         }
 
@@ -82,7 +92,15 @@ namespace VN.MiniGames
             if (currentIndex < keyTexts.Count && keyTexts[currentIndex] != null)
                 keyTexts[currentIndex].color = failedColor;
 
-            ApplyKeySlot(currentIndex, currentDefinition != null ? currentDefinition.FailedKeySlotSprite : null, failedColor);
+            KeyCode key = sequence[currentIndex];
+            Sprite failedSprite = currentDefinition != null
+                ? currentDefinition.GetKeySprite(key, SequenceQTEKeyState.Failed)
+                : null;
+
+            if (failedSprite != null)
+                ApplyCombinedKeySprite(currentIndex, failedSprite);
+            else
+                ApplyKeySlot(currentIndex, currentDefinition != null ? currentDefinition.FailedKeySlotSprite : null, failedColor);
         }
 
         public void UpdateTimer(float remainingSeconds, float totalSeconds)
@@ -94,15 +112,32 @@ namespace VN.MiniGames
             if (timerText != null) timerText.text = Mathf.Max(0f, remainingSeconds).ToString("0.0");
         }
 
-        public void ShowResult(bool isSuccess, string rank)
+        public bool ShowResult(bool isSuccess, string rank)
         {
             if (resultText != null)
-                resultText.text = isSuccess ? $"SUCCESS\n{rank}" : $"FAIL\n{rank}";
+                resultText.text = string.Empty;
 
             Sprite resultSprite = null;
             if (currentDefinition != null)
                 resultSprite = isSuccess ? currentDefinition.SuccessSprite : currentDefinition.FailSprite;
-            ApplySprite(resultImage, resultSprite, false);
+
+            if (resultImage != null && resultSprite != null)
+            {
+                resultImage.gameObject.SetActive(true);
+                resultImage.enabled = true;
+                resultImage.sprite = resultSprite;
+                resultImage.color = Color.white;
+
+                RectTransform resultRect = resultImage.rectTransform;
+                resultRect.anchorMin = Vector2.zero;
+                resultRect.anchorMax = Vector2.one;
+                resultRect.anchoredPosition = Vector2.zero;
+                resultRect.sizeDelta = Vector2.zero;
+                resultImage.preserveAspect = false;
+                resultImage.transform.SetAsLastSibling();
+                Canvas.ForceUpdateCanvases();
+            }
+            return resultSprite != null;
         }
 
         private void ResolveRoot()
@@ -125,6 +160,37 @@ namespace VN.MiniGames
             return currentDefinition.KeySlotSprite;
         }
 
+        private static SequenceQTEKeyState GetKeyState(int index, int currentIndex)
+        {
+            if (index < currentIndex) return SequenceQTEKeyState.Complete;
+            if (index == currentIndex) return SequenceQTEKeyState.Current;
+            return SequenceQTEKeyState.Pending;
+        }
+
+        private void UpdateKeyLayout(IReadOnlyList<KeyCode> sequence)
+        {
+            if (sequence == null || sequence.Count == 0) return;
+
+            float totalWeight = 0f;
+            for (int i = 0; i < sequence.Count; i++)
+                totalWeight += sequence[i] == KeyCode.Space ? 1.75f : 1f;
+
+            float cursor = 0f;
+            for (int i = 0; i < sequence.Count && i < keyTexts.Count; i++)
+            {
+                TMP_Text keyText = keyTexts[i];
+                if (keyText == null) continue;
+
+                float weight = sequence[i] == KeyCode.Space ? 1.75f : 1f;
+                float spacing = 0.006f;
+                keyText.rectTransform.anchorMin = new Vector2(cursor / totalWeight + spacing, 0f);
+                cursor += weight;
+                keyText.rectTransform.anchorMax = new Vector2(cursor / totalWeight - spacing, 1f);
+                keyText.rectTransform.anchoredPosition = Vector2.zero;
+                keyText.rectTransform.sizeDelta = Vector2.zero;
+            }
+        }
+
         private void SetKeyObjectActive(int index, bool active)
         {
             if (index < keySlotImages.Count && keySlotImages[index] != null)
@@ -145,6 +211,22 @@ namespace VN.MiniGames
             slot.enabled = true;
         }
 
+        private void ApplyCombinedKeySprite(int index, Sprite sprite)
+        {
+            if (index >= keySlotImages.Count || keySlotImages[index] == null) return;
+
+            Image slot = keySlotImages[index];
+            slot.sprite = sprite;
+            slot.color = Color.white;
+            slot.preserveAspect = true;
+            slot.enabled = true;
+
+            if (index < keyIconImages.Count && keyIconImages[index] != null)
+                keyIconImages[index].gameObject.SetActive(false);
+            if (index < keyTexts.Count && keyTexts[index] != null)
+                keyTexts[index].enabled = false;
+        }
+
         private void ApplyKeyIcon(int index, KeyCode key, Sprite sprite, Color fallbackColor)
         {
             Image icon = index < keyIconImages.Count ? keyIconImages[index] : null;
@@ -162,7 +244,8 @@ namespace VN.MiniGames
             {
                 text.text = FormatKey(key);
                 text.color = fallbackColor;
-                text.gameObject.SetActive(sprite == null);
+                text.gameObject.SetActive(true);
+                text.enabled = sprite == null;
             }
         }
 
@@ -183,6 +266,7 @@ namespace VN.MiniGames
         {
             if (image == null) return;
             image.sprite = sprite;
+            if (sprite != null) image.color = Color.white;
             image.enabled = sprite != null || visibleWhenMissing;
             image.gameObject.SetActive(sprite != null || visibleWhenMissing);
         }

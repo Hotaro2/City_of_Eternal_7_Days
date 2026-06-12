@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace VN.MiniGames
 {
@@ -11,6 +12,7 @@ namespace VN.MiniGames
         [SerializeField] private bool playOnStart = true;
         [SerializeField] private KeyCode singleQteKey = KeyCode.Alpha1;
         [SerializeField] private KeyCode sequenceQteKey = KeyCode.Alpha2;
+        [SerializeField] private string returnSceneName = "LobbyScene";
         [SerializeField] private TMP_Text statusText;
 
         private void Awake()
@@ -49,6 +51,9 @@ namespace VN.MiniGames
                 SetStatus(result == null
                     ? "Result: null"
                     : $"{result.miniGameId}: {(result.isSuccess ? "Success" : "Fail")} / {result.rank} / {result.score}");
+
+                if (!string.IsNullOrWhiteSpace(returnSceneName))
+                    SceneManager.LoadScene(returnSceneName);
             });
 
             if (started) SetStatus($"Running {miniGameId}");

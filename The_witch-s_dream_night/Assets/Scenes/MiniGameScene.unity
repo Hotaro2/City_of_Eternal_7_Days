@@ -6119,6 +6119,7 @@ MonoBehaviour:
   playOnStart: 1
   singleQteKey: 49
   sequenceQteKey: 50
+  returnSceneName: LobbyScene
   statusText: {fileID: 1387549176}
 --- !u!224 &1729541353 stripped
 RectTransform:

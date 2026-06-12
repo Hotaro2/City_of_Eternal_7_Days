@@ -1,8 +1,10 @@
 using System.Collections;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace VN
 {
@@ -26,6 +28,15 @@ namespace VN
         [SerializeField] private Image fader;
         [SerializeField] private TMP_Text versionText;
 
+        [Header("Intro Video")]
+        [SerializeField] private Canvas titleCanvas;
+        [SerializeField] private Canvas introCanvas;
+        [SerializeField] private RawImage introVideoImage;
+        [SerializeField] private Camera introCamera;
+        [SerializeField] private string introVideoPath = "Title/TitleIntro.mp4";
+        [SerializeField] private bool allowIntroSkip = true;
+        [SerializeField, Min(0f)] private float introSkipDelay = 0.5f;
+
         [Header("Audio")]
         [SerializeField] private VNAssetDatabase assetDatabase;
         [SerializeField] private AudioSource titleBgmSource;
@@ -36,6 +47,8 @@ namespace VN
         private float masterVolume = 1f;
         private float bgmVolume = 1f;
         private float sfxVolume = 1f;
+        private VideoPlayer introVideoPlayer;
+        private RenderTexture introVideoTexture;
 
         public VNAssetDatabase AssetDatabase => assetDatabase;
 
@@ -62,11 +75,143 @@ namespace VN
             if (continueButton != null)
                 continueButton.interactable = VNSaveService.GetLatestSaveSlot() != -1;
 
-            StartCoroutine(FadeRoutine(0f));
-
             scenePresenter = FindFirstObjectByType<VNPresenter>();
             ApplySavedAudioSettings();
+            StartCoroutine(InitializeTitleRoutine());
+        }
+
+        private IEnumerator InitializeTitleRoutine()
+        {
+            if (titleCanvas == null)
+                titleCanvas = FindFirstObjectByType<Canvas>();
+
+            if (introCamera == null)
+                introCamera = Camera.main;
+
+            if (titleCanvas != null)
+                titleCanvas.enabled = false;
+
+            if (introCanvas != null)
+                introCanvas.gameObject.SetActive(true);
+
+            yield return PlayIntroVideoRoutine();
+
+            if (introCanvas != null)
+                introCanvas.gameObject.SetActive(false);
+
+            if (titleCanvas != null)
+                titleCanvas.enabled = true;
+
+            yield return FadeRoutine(0f);
             PlayTitleBGM();
+        }
+
+        private IEnumerator PlayIntroVideoRoutine()
+        {
+            string videoPath = Path.Combine(Application.streamingAssetsPath, introVideoPath);
+            if (!File.Exists(videoPath) || introCamera == null)
+                yield break;
+
+            introVideoPlayer = introCamera.GetComponent<VideoPlayer>();
+            if (introVideoPlayer == null)
+                introVideoPlayer = introCamera.gameObject.AddComponent<VideoPlayer>();
+
+            bool prepareFinished = false;
+            bool playbackFinished = false;
+            bool playbackFailed = false;
+
+            void OnPrepared(VideoPlayer _) => prepareFinished = true;
+            void OnFinished(VideoPlayer _) => playbackFinished = true;
+            void OnError(VideoPlayer _, string message)
+            {
+                Debug.LogWarning($"[VNTitleManager] Intro video could not be played: {message}");
+                playbackFailed = true;
+            }
+
+            introVideoPlayer.playOnAwake = false;
+            introVideoPlayer.isLooping = false;
+            introVideoPlayer.skipOnDrop = true;
+            introVideoPlayer.waitForFirstFrame = true;
+            if (introVideoImage != null)
+            {
+                introVideoTexture = new RenderTexture(
+                    Mathf.Max(Screen.width, 16),
+                    Mathf.Max(Screen.height, 16),
+                    0,
+                    RenderTextureFormat.ARGB32);
+                introVideoTexture.Create();
+                introVideoImage.texture = introVideoTexture;
+                introVideoPlayer.renderMode = VideoRenderMode.RenderTexture;
+                introVideoPlayer.targetTexture = introVideoTexture;
+            }
+            else
+            {
+                introVideoPlayer.renderMode = VideoRenderMode.CameraNearPlane;
+                introVideoPlayer.targetCamera = introCamera;
+                introVideoPlayer.targetCameraAlpha = 1f;
+            }
+
+            introVideoPlayer.aspectRatio = VideoAspectRatio.FitInside;
+            introVideoPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
+            introVideoPlayer.url = videoPath.Replace('\\', '/');
+            introVideoPlayer.prepareCompleted += OnPrepared;
+            introVideoPlayer.loopPointReached += OnFinished;
+            introVideoPlayer.errorReceived += OnError;
+            introVideoPlayer.Prepare();
+
+            float prepareElapsed = 0f;
+            while (!prepareFinished && !playbackFailed)
+            {
+                prepareElapsed += Time.unscaledDeltaTime;
+                if (prepareElapsed >= 10f)
+                {
+                    Debug.LogWarning("[VNTitleManager] Intro video preparation timed out.");
+                    playbackFailed = true;
+                    break;
+                }
+
+                yield return null;
+            }
+
+            if (!playbackFailed)
+            {
+                introVideoPlayer.Play();
+                float elapsed = 0f;
+
+                while (!playbackFinished && !playbackFailed)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    if (allowIntroSkip && elapsed >= introSkipDelay && IsIntroSkipPressed())
+                        break;
+
+                    yield return null;
+                }
+            }
+
+            introVideoPlayer.Stop();
+            introVideoPlayer.prepareCompleted -= OnPrepared;
+            introVideoPlayer.loopPointReached -= OnFinished;
+            introVideoPlayer.errorReceived -= OnError;
+
+            if (introVideoImage != null)
+                introVideoImage.texture = null;
+
+            if (introVideoTexture != null)
+            {
+                introVideoTexture.Release();
+                Destroy(introVideoTexture);
+                introVideoTexture = null;
+            }
+        }
+
+        private static bool IsIntroSkipPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            return UnityEngine.InputSystem.Keyboard.current?.anyKey.wasPressedThisFrame == true
+                || UnityEngine.InputSystem.Mouse.current?.leftButton.wasPressedThisFrame == true;
+#else
+            return Input.anyKeyDown || Input.GetMouseButtonDown(0);
+#endif
         }
 
         private void ApplySavedAudioSettings()

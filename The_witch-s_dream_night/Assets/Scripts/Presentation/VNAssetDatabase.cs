@@ -44,6 +44,10 @@ namespace VN
         public Sprite GetBackground(string key) 
         {
             var entry = backgrounds.Find(e => e.key.Equals(key, StringComparison.OrdinalIgnoreCase));
+
+            if (entry.sprite == null)
+                Debug.LogWarning($"[VNAssetDatabase] Background key '{key}' was not found or has no sprite.");
+
             return entry.sprite;
         }
 
